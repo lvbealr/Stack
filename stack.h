@@ -4,7 +4,9 @@
 typedef int stack_t;
 
 #ifndef _NDEBUG
-    #define GET_OBJECT_LAST_INFO(st) st->lastUseFileName = __FILE__; st->lastUseLine = __LINE__
+    #define GET_OBJECT_LAST_INFO(st) st->lastUseFileName       = __FILE__;     \
+                                     st->lastUseLine           = __LINE__;     \
+                                     st->lastUseFuncPrototype  = __FUNCTION__; 
 
     // TODO fix your codestyle
     #define DUMP_(st) {           \
@@ -25,19 +27,23 @@ struct stack {
     // TODO do not place struct fields under ON_DEBUG
     ON_DEBUG(const char *bornFileName);
     ON_DEBUG(int         bornLine);
-    ON_DEBUG(const char *funcPrototype);
+    ON_DEBUG(const char *bornFuncPrototype);
     ON_DEBUG(const char *lastUseFileName);
     ON_DEBUG(int         lastUseLine);
+    ON_DEBUG(const char *lastUseFuncPrototype);
     char       *dumpFile;
     size_t      size;
     size_t      capacity;
     stack_t    *data;
 };
 
-const int DUMP_MEMORY = 0;
-const int ADD_MEMORY  = 1;
+enum changeMemory {
+    DUMP_MEMORY = 0,
+    ADD_MEMORY  = 1
+};
 
 const size_t START_STACK_SIZE = 100;
+const size_t NAME_BUFFER_SIZE = 40;
 
 const stack_t BAD_VALUE = -666; // CHANGE IN DEPENDENCE OF STACK_T TYPE
 
@@ -56,7 +62,7 @@ int stackInitialize(stack *stack, int size);
 int stackDestruct(stack *stack);
 int stackPush(stack *stack, stack_t value);
 int stackPop(stack *stack, stack_t *variable);
-static inline int stackResize(stack *stack, const int mode);
+static inline int stackResize(stack *stack, const changeMemory changeMemoryMode);
 int stackDump(stack *stack);
 int stackCheck(stack *stack);
 // FUNCTION PROTOTYPES //
