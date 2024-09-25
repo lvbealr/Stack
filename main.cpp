@@ -3,7 +3,15 @@
 
 #include "stack.h"
 
-#define INIT(st) st.bornFileName = __FILE__, st.bornLine = __LINE__, st.funcPrototype = __PRETTY_FUNCTION__, st.dumpFile = "stackDump.html"
+#ifndef _NDEBUG
+    #define INIT(st) st.bornFileName = __FILE__, st.bornLine = __LINE__, st.funcPrototype = __PRETTY_FUNCTION__, st.dumpFile = "stackDump.html"
+    #define SHOW_HTML() system("xdg-open ~/Stack/stackDump.html"); system("rm -r ~/Stack/stackDump.html")
+
+#else
+    #define INIT(st)
+    #define SHOW_HTML()
+    
+#endif
 
 int main(int argc, char *argv[]) {
     stack Stack = {INIT(Stack)};
@@ -25,8 +33,7 @@ int main(int argc, char *argv[]) {
 
     stackDestruct(&Stack);
 
-    system("xdg-open ~/Stack/stackDump.html");
-    system("rm -r ~/Stack/stackDump.html");
+    SHOW_HTML();
 
     return 0;
 }

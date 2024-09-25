@@ -3,13 +3,21 @@
 
 typedef int stack_t;
 
-#define GET_OBJECT_LAST_INFO(st) st->lastUseFileName = __FILE__; st->lastUseLine = __LINE__
+#ifndef _NDEBUG
+    #define GET_OBJECT_LAST_INFO(st) st->lastUseFileName = __FILE__; st->lastUseLine = __LINE__
 
-#define DUMP_(st) {GET_OBJECT_LAST_INFO(st); \
-                   stackDumpHtml(st);        \
-                  }
+    #define DUMP_(st) {GET_OBJECT_LAST_INFO(st); \
+                    stackDumpHtml(st);        \
+                    }
 
-#define ON_DEBUG(...) __VA_ARGS__
+    #define ON_DEBUG(...) __VA_ARGS__
+
+#else
+    #define GET_OBJECT_LAST_INFO(st)
+    #define DUMP_(st)
+    #define ON_DEBUG(...)
+
+#endif // NDEBUG
 
 struct stack {
     ON_DEBUG(const char *bornFileName);
@@ -22,8 +30,7 @@ struct stack {
     size_t      capacity;
     stack_t    *data;
 };
-
-#undef ON_DEBUG // ?????????????????????
+// #undef ON_DEBUG // ?????????????????????
 
 const int DUMP_MEMORY = 0;
 const int ADD_MEMORY  = 1;

@@ -12,6 +12,8 @@ const char *endHtml   = R"(</body></html>)";
 
 // сделать подсветку size или элементов разным цветом, если элемент кладут или достают
 
+#ifndef _NDEBUG
+
 int stackDump(stack *stack) {
     FILE *outputFile = fopen(stack->dumpFile, "a");
     customWarning(outputFile != NULL, 1);
@@ -127,3 +129,5 @@ int stackDumpHtml(stack *stack) {
 
     return 0;
 }
+
+#endif
