@@ -1,8 +1,9 @@
 #include <cstdio>
+#include <cstdlib>
 
 #include "stack.h"
 
-#define INIT(st) st.bornFileName = __FILE__, st.bornLine = __LINE__, st.funcPrototype = __PRETTY_FUNCTION__, st.dumpFile = "stackDump.txt"
+#define INIT(st) st.bornFileName = __FILE__, st.bornLine = __LINE__, st.funcPrototype = __PRETTY_FUNCTION__, st.dumpFile = "stackDump.html"
 
 int main(int argc, char *argv[]) {
     stack Stack = {INIT(Stack)};
@@ -23,6 +24,9 @@ int main(int argc, char *argv[]) {
     ////////////////////////
 
     stackDestruct(&Stack);
+
+    system("xdg-open ~/Stack/stackDump.html");
+    system("rm -r ~/Stack/stackDump.html");
 
     return 0;
 }
