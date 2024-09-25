@@ -6,7 +6,7 @@ typedef int stack_t;
 #define GET_OBJECT_LAST_INFO(st) st->lastUseFileName = __FILE__; st->lastUseLine = __LINE__
 
 #define DUMP_(st) {GET_OBJECT_LAST_INFO(st); \
-                   stackDumpHtml(st);            \
+                   stackDumpHtml(st);        \
                   }
 
 #define ON_DEBUG(...) __VA_ARGS__
