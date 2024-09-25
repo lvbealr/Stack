@@ -4,40 +4,33 @@
 #include <ctime>
 
 #include "stack.h"
-
-// #define SHOW_HTML() system("xdg-open ~/Stack/stackDump.html"); system("rm -r ~/Stack/stackDump.html")
+#include "customWarning/customWarning.h"
 
 #ifndef _NDEBUG
-    // TODO what does init mean?
-    #define INIT_STACK(st) st.bornFileName = __FILE__, st.bornLine = __LINE__, st.funcPrototype = __PRETTY_FUNCTION__
+    #define INIT_STACK(st) st.bornFileName = __FILE__,                \
+                           st.bornLine     = __LINE__,                \
+                           st.bornFuncPrototype = __PRETTY_FUNCTION__
 
 #else
     #define INIT(st)
-    #define SHOW_HTML()
     
 #endif
 
 static int setDumpFileName(stack *stack) {
     customWarning(stack != NULL, 1);
 
-    char buffer[32]       = {};
-    const time_t timer    = time(NULL);
-    tm *now               = localtime(&timer);
-    const char *timeChar  = asctime(now);  
-    size_t timeCharLength = strlen(timeChar) - 1;
+    char *buffer           = (char *)calloc(NAME_BUFFER_SIZE, sizeof(char));
+    const time_t timer     = time(NULL);
+    tm *now                = localtime(&timer);
+    const char *timeChar   = asctime(now);  
+    size_t timeCharLength  = strlen(timeChar) - 1;
+    const char *folderName = "dumps/";
 
-    strncpy(buffer, timeChar, timeCharLength);
+    strcpy(buffer, folderName);
+    strncpy(buffer + strlen(folderName), timeChar, timeCharLength);
     strcat(buffer, ".html");
 
-    for (size_t index = 0; index < sizeof(buffer); index++) {
-        if (buffer[index] == ' ') {
-            buffer[index] = '-';
-        }
-    }
-
-    stack->dumpFile = buffer;
-
-    printf("ВНУТРИ setDumpFileName: %s\n", stack->dumpFile);
+    stack->dumpFile        = buffer;
 
     return 0;
 }
@@ -47,27 +40,22 @@ int main(int argc, char *argv[]) {
     stack Stack = {INIT_STACK(Stack)};
     setDumpFileName(&Stack);
 
-    printf("ДО stackInitialize: %s\n", Stack.dumpFile);
     stackInitialize(&Stack, 20);
-    printf("ПОСЛЕ stackInitialize: %s\n", Stack.dumpFile);
-    // TODO sprintf to name time
 
-    ////////////////////////
-    for (int testIndex = 0; testIndex < 25; testIndex++) {
-        stackPush(&Stack, testIndex);
-    }
-    
-    stack_t x = 0;
-
-    stackPop(&Stack, &x);
-    stackPop(&Stack, &x);
-
-    stackPush(&Stack, 999);
-    ////////////////////////
+    //////////////////////////////////////////////////////////
+    for (int testIndex = 0; testIndex < 25; testIndex++) {  //
+        stackPush(&Stack, testIndex);                       //
+    }                                                       //
+                                                            //
+    stack_t x = 0;                                          // 
+                                                            //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+                                                            //
+    stackPush(&Stack, 999);                                 //
+    //////////////////////////////////////////////////////////
 
     stackDestruct(&Stack);
-
-    // SHOW_HTML();
 
     return 0;
 }
