@@ -12,9 +12,12 @@
 int stackInitialize(stack *stack, int capacity) {
     customWarning(!stackCheck(stack), 1);
 
+    printf("ВНУТРИ stackInitialize: %s\n", stack->dumpFile);
     stack->size     = 0;
     stack->capacity = capacity;
     stack->data     = (stack_t *)calloc(capacity, sizeof(stack_t));
+
+    // TODO check for null?
 
     DUMP_(stack);
 
@@ -81,6 +84,7 @@ static inline int stackResize(stack *stack, const int mode) {
 
     DUMP_(stack);
 
+    // TODO what the fuck is mode?
     if (mode == 1) {
         stack->data = (stack_t *)realloc(stack->data, stack->capacity * sizeof(stack) * 2);
         stack->capacity *= 2;

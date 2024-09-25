@@ -6,9 +6,11 @@ typedef int stack_t;
 #ifndef _NDEBUG
     #define GET_OBJECT_LAST_INFO(st) st->lastUseFileName = __FILE__; st->lastUseLine = __LINE__
 
-    #define DUMP_(st) {GET_OBJECT_LAST_INFO(st); \
-                    stackDumpHtml(st);        \
-                    }
+    // TODO fix your codestyle
+    #define DUMP_(st) {           \
+        GET_OBJECT_LAST_INFO(st); \
+        stackDumpHtml(st);        \
+    }
 
     #define ON_DEBUG(...) __VA_ARGS__
 
@@ -20,17 +22,17 @@ typedef int stack_t;
 #endif // NDEBUG
 
 struct stack {
+    // TODO do not place struct fields under ON_DEBUG
     ON_DEBUG(const char *bornFileName);
     ON_DEBUG(int         bornLine);
     ON_DEBUG(const char *funcPrototype);
     ON_DEBUG(const char *lastUseFileName);
     ON_DEBUG(int         lastUseLine);
-    const char *dumpFile;
+    char       *dumpFile;
     size_t      size;
     size_t      capacity;
     stack_t    *data;
 };
-// #undef ON_DEBUG // ?????????????????????
 
 const int DUMP_MEMORY = 0;
 const int ADD_MEMORY  = 1;
