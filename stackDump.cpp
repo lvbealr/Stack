@@ -13,68 +13,68 @@ const char *endHtml   = R"(</body></html>)";
 
 #ifndef _NDEBUG
 
-static size_t previousSize = 0;
+size_t previousSize = 0;
 
-int stackDump(stack *stack) {
-    FILE *outputFile = fopen(stack->dumpFile, "a");
-    customWarning(outputFile != NULL, 1);
+// int stackDump(stack *stack) {
+//     FILE *outputFile = fopen(stack->dumpFile, "a");
+//     customWarning(outputFile != NULL, 1);
 
-    fprintf(outputFile, "stack [%p] at %s:%d (%s) born at %s:%d (%s)\n",
-                        stack, stack->lastUseFileName, stack->lastUseLine,
-                        stack->lastUseFuncPrototype, stack->bornFileName,
-                        stack->bornLine, stack->bornFuncPrototype);
+//     fprintf(outputFile, "stack [%p] at %s:%d (%s) born at %s:%d (%s)\n",
+//                         stack, stack->lastUseFileName, stack->lastUseLine,
+//                         stack->lastUseFuncPrototype, stack->bornFileName,
+//                         stack->bornLine, stack->bornFuncPrototype);
 
-    fprintf(outputFile, "\t{\n\tsize     = %d\n\tcapacity = %d\n\tdata[%p]:\n\t{\n",
-                        stack->size, stack->capacity, stack->data);
+//     fprintf(outputFile, "\t{\n\tsize     = %lu\n\tcapacity = %lu\n\tdata[%p]:\n\t{\n",
+//                         stack->size, stack->capacity, stack->data);
 
-    if (stack->capacity > 50) {
-        for (int index = 0; index < 50; index++) {
+//     if (stack->capacity > 50) {
+//         for (size_t index = 0; index < 50; index++) {
 
-            if (index < stack->size) {
-                fprintf(outputFile, "\t*[%d] = ", index);
-                fprintf(outputFile, "%" SPECIFICATOR_TYPE "\n", stack->data[index]);
-            }
+//             if (index < stack->size) {
+//                 fprintf(outputFile, "\t*[%lu] = ", index);
+//                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "\n", stack->data[index]);
+//             }
 
-            else {
-                fprintf(outputFile, "\t [%d] = \n", index);
-            }
-        }
+//             else {
+//                 fprintf(outputFile, "\t [%lu] = \n", index);
+//             }
+//         }
 
-        fprintf(outputFile, "\t ...\n");
+//         fprintf(outputFile, "\t ...\n");
 
-        for (int index = stack->capacity - 5; index < stack->capacity; index++) {
+//         for (size_t index = stack->capacity - 5; index < stack->capacity; index++) {
 
-            if (index < stack->size) {
-                fprintf(outputFile, "\t*[%d] = ", index);
-                fprintf(outputFile, "%" SPECIFICATOR_TYPE "\n", stack->data[index]);
-            }
+//             if (index < stack->size) {
+//                 fprintf(outputFile, "\t*[%lu] = ", index);
+//                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "\n", stack->data[index]);
+//             }
 
-            else {
-                fprintf(outputFile, "\t [%d] = \n", index);
-            }
-        }
-    }
+//             else {
+//                 fprintf(outputFile, "\t [%lu] = \n", index);
+//             }
+//         }
+//     }
 
-    else {
-        for (int index = 0; index < stack->capacity; index++) {
+//     else {
+//         for (size_t index = 0; index < stack->capacity; index++) {
             
-            if (index < stack->size) {
-                fprintf(outputFile, "\t*[%d] = ", index);
-                fprintf(outputFile, "%" SPECIFICATOR_TYPE "\n", stack->data[index]);
-            }
+//             if (index < stack->size) {
+//                 fprintf(outputFile, "\t*[%lu] = ", index);
+//                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "\n", stack->data[index]);
+//             }
 
-            else {
-                fprintf(outputFile, "\t [%d] = \n", index);
-            }
-        }
-    }
+//             else {
+//                 fprintf(outputFile, "\t [%lu] = \n", index);
+//             }
+//         }
+//     }
 
-    fprintf(outputFile, "\t}\n}\n\n");
+//     fprintf(outputFile, "\t}\n}\n\n");
 
-    fclose(outputFile);
+//     fclose(outputFile);
 
-    return 0;
-}
+//     return 0;
+// }
 
 int stackDumpHtml(stack *stack) {
     FILE *outputFile = fopen(stack->dumpFile, "a");
@@ -89,50 +89,53 @@ int stackDumpHtml(stack *stack) {
                         stack->bornFileName, stack->bornLine, stack->bornFuncPrototype);
 
     fprintf(outputFile, "{\n"
-    "\t<b>size</b>     = <b>%d</b>\n"
-    "\t<b>capacity</b> = <b>%d</b>\n"
+    "\t<b>size</b>     = <b>%lu</b>\n"
+    "\t<b>capacity</b> = <b>%lu</b>\n"
     "\t<b>data</b><b><font color = 'DeepSkyBlue'>" "[%p]</font></b>:\n"
     "\t{\n", stack->size, stack->capacity, stack->data);
 
     if (stack->capacity > 50) {
 
-        for (int index = 0; index < 50; index++) {
+        for (size_t index = 0; index < 50; index++) {
 
             if (index < stack->size) {
-                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%d]" "</b> = </font>", index);
+                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu]" "</b></font> = ", index);
                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "\n", stack->data[index]);
             }
 
             else {
-                fprintf(outputFile, "\t[%d] = \n", index);
+                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu]" "</b></font> = ", index);
+                fprintf(outputFile, "%" SPECIFICATOR_TYPE "<font color = 'Red'><b> [POISON]</b></font>\n", stack->data[index]);
             }
         }
 
         fprintf(outputFile, "\t ...\n");
 
-        for (int index = stack->capacity - 5; index < stack->capacity; index++) {
+        for (size_t index = stack->capacity - 5; index < stack->capacity; index++) {
 
             if (index < stack->size) {
-                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%d]" "</b> = </font>", index);
+                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu]" "</b></font> = ", index);
                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "\n", stack->data[index]);
             }
 
             else {
-                fprintf(outputFile, "\t[%d] = \n", index);
+                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu]" "</b></font> = ", index);
+                fprintf(outputFile, "%" SPECIFICATOR_TYPE "<font color = 'Red'><b> [POISON]</b></font>\n", stack->data[index]);
             }
         }
     }
 
     else {
-        for (int index = 0; index < stack->capacity; index++) {
+        for (size_t index = 0; index < stack->capacity; index++) {
 
             if (index < stack->size) {
-                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%d]" "</b></font> = ", index);
+                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu]" "</b></font> = ", index);
                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "\n", stack->data[index]);
             }
 
             else {
-                fprintf(outputFile, "\t [%d] = \n", index);
+                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu]" "</b></font> = ", index);
+                fprintf(outputFile, "%" SPECIFICATOR_TYPE "<font color = 'Red'><b> [POISON]</b></font>\n", stack->data[index]);
             }
         }
     }
