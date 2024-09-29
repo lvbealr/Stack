@@ -6,16 +6,31 @@
 #include "stack.h"
 #include "customWarning/customWarning.h"
 
+#define SPECIFICATOR_TYPE "d"
+
 // WHAT BREAK BY WARNING
 // WHAT BREAK BY ASSERT 
 // SOLVE THIS ??????????
 
+// TODO ALL POINTERS TO NULL AFTER FREE!!!!!!
+// TODO CONDITIONAL COMPILATION (MEMORY CHUNK & DATA)
+
 int stackInitialize(stack *stack, size_t capacity) {
     customWarning(!stackCheck(stack), 1);
 
-    stack->size     = 0;
-    stack->capacity = capacity;
-    stack->data     = (stack_t *)calloc(capacity, sizeof(stack_t));
+    stack->size         = 0;
+    stack->capacity     = capacity;
+    stack->memoryChunk  = (stack_t *)calloc(capacity + 2 * CANARY_SIZE(CANARY), sizeof(stack_t));
+    stack->data         = stack->memoryChunk + 1;
+
+    DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
+    DATA_END_CANARY_INITIALIZE(stack->memoryChunk, stack->capacity + CANARY_SIZE(CANARY));
+
+    printf("[START ADDRESS] %p\t[START VALUE] %" SPECIFICATOR_TYPE "\n",
+            stack->memoryChunk, *(stack->memoryChunk));
+    printf("[END ADDRESS] %p\t[END VALUE] %" SPECIFICATOR_TYPE "\n",
+            stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY), 
+          *(stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY)));
 
     customWarning(stack->data != NULL, 1);
 
@@ -37,6 +52,12 @@ int stackFillPoison(stack *stack, size_t fillSize) {
 
     DUMP_(stack);
 
+    printf("[START ADDRESS] %p\t[START VALUE] %" SPECIFICATOR_TYPE "\n",
+            stack->memoryChunk, *(stack->memoryChunk));
+    printf("[END ADDRESS] %p\t[END VALUE] %" SPECIFICATOR_TYPE "\n",
+            stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY),
+          *(stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY)));
+
     customWarning(!stackCheck(stack), 1);
 
     return 0;
@@ -48,11 +69,19 @@ int stackDestruct(stack *stack) {
     stack->size     = 0;
     stack->capacity = 0;
 
-    free(stack->data);
+    printf("[START ADDRESS] %p\t[START VALUE] %" SPECIFICATOR_TYPE "\n",
+            stack->memoryChunk, *(stack->memoryChunk));
+    printf("[END ADDRESS] %p\t[END VALUE] %" SPECIFICATOR_TYPE "\n",
+        stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY),
+      *(stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY)));
+
+    free(stack->memoryChunk);
+    stack->memoryChunk = NULL;
 
     DUMP_(stack);
 
     free(stack->dumpFile);
+    stack->dumpFile    = NULL;
 
     customWarning(!stackCheck(stack), 1);
 
@@ -71,6 +100,12 @@ int stackPush(stack *stack, stack_t value) {
     stack->data[stack->size++] = value;
 
     DUMP_(stack);
+
+    printf("[START ADDRESS] %p\t[START VALUE] %" SPECIFICATOR_TYPE "\n",
+            stack->memoryChunk, *(stack->memoryChunk));
+    printf("[END ADDRESS] %p\t[END VALUE] %" SPECIFICATOR_TYPE "\n",
+            stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY),
+          *(stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY)));
 
     customWarning(!stackCheck(stack), 1);
 
@@ -92,6 +127,12 @@ int stackPop(stack *stack, stack_t *variable) {
 
     DUMP_(stack);
 
+    printf("[START ADDRESS] %p\t[START VALUE] %" SPECIFICATOR_TYPE "\n",
+            stack->memoryChunk, *(stack->memoryChunk));
+    printf("[END ADDRESS] %p\t[END VALUE] %" SPECIFICATOR_TYPE "\n",
+            stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY),
+          *(stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY)));
+
     customWarning(!stackCheck(stack),  1);
 
     return 0;
@@ -104,18 +145,45 @@ int stackResize(stack *stack, const changeMemory changeMemoryMode) {
     DUMP_(stack);
 
     if (changeMemoryMode == ADD_MEMORY) {
-        stack->data = (stack_t *)realloc(stack->data, stack->capacity * sizeof(stack) * 2);
-        customWarning(stack->data != NULL, 1);
-        stack->capacity *= 2;
+        // TODO WHAT THE FUCK IT WORKS???
+        stack->memoryChunk = (stack_t *)realloc(stack->memoryChunk,
+                                                sizeof(stack_t) * (stack->capacity * 2 + CANARY_SIZE(CANARY) * 2));
+        // TODO WHAT THE FUCK IT WORKS???
+
+        customWarning(stack->memoryChunk != NULL, 1);
+
+        DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
+        DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, stack->capacity * 2 + CANARY_SIZE(CANARY));
+
+        stack->data         = stack->memoryChunk + 1;
+        stack->capacity    *= 2;
+
         stackFillPoison(stack, stack->capacity); // TODO customRealloc (realloc + fill)
     }
+
     else if (changeMemoryMode == DUMP_MEMORY) {
-        stack->data = (stack_t *)realloc(stack->data, stack->capacity / sizeof(stack) / 2);
-        customWarning(stack->data != NULL, 1);
-        stack->capacity /= 2;
+        // TODO WHAT THE FUCK IT WORKS???
+        stack->data = (stack_t *)realloc(stack->memoryChunk,
+                                         sizeof(stack_t) * (stack->capacity / 2 + CANARY_SIZE(CANARY) * 2));
+        // TODO WHAT THE FUCK IT WORKS???
+
+        customWarning(stack->memoryChunk != NULL, 1);
+
+        DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
+        DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, stack->capacity / 2 + CANARY_SIZE(CANARY));
+
+        stack->data         = stack->memoryChunk + 1;
+        stack->capacity    /= 2;
+
         stackFillPoison(stack, stack->capacity); // TODO customRealloc (realloc + fill)
     }
     
+    printf("[START ADDRESS] %p\t[START VALUE] %" SPECIFICATOR_TYPE "\n",
+            stack->memoryChunk, *(stack->memoryChunk));
+    printf("[END ADDRESS] %p\t[END VALUE] %" SPECIFICATOR_TYPE "\n",
+            stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY),
+          *(stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY)));
+
     DUMP_(stack);
 
     customWarning(!stackCheck(stack), 1);
@@ -124,6 +192,13 @@ int stackResize(stack *stack, const changeMemory changeMemoryMode) {
 }
 
 int stackCheck(stack *stack) {    
+    printf("[l] %p %lu\n", &(stack->leftCanary), stack->leftCanary);
+    printf("[r] %p %lu\n", &(stack->rightCanary), stack->rightCanary);
+    printf("[memoryChunk] %p, [capacity] %lu\n",
+            stack->memoryChunk, stack->capacity);
+    if (stack->memoryChunk != NULL) {
+        CHECK_CANARY();
+    }
     customWarning(stack           != NULL,            1);
     customWarning(stack->size     <= stack->capacity, 1);
 

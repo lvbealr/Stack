@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstdint>
 
 #include "stackDump.h"
 #include "customWarning/customWarning.h"
@@ -81,30 +82,36 @@ int stackDumpHtml(stack *stack) {
     customWarning(outputFile != NULL, 1);
 
     fprintf(outputFile, "%s<pre>", startHtml);
-
     fprintf(outputFile, "<b><u>stack</u><font color = 'DeepSkyBlue'>" "[%p]" "</font></b>"
                         " at <b><u>%s:%d</u> <u>(%s)</u></b> <font color = 'DarkOrange'><b>born at</b></font>"
                         " <b><u>%s:%d</u></b> (%s)\n",
                         stack, stack->lastUseFileName, stack->lastUseLine, stack->lastUseFuncPrototype,
                         stack->bornFileName, stack->bornLine, stack->bornFuncPrototype);
-
-    fprintf(outputFile, "{\n"
+    fprintf(outputFile, "\t{\n");
+    fprintf(outputFile, "\tLEFT_STACK_INFO_CANARY [%p] = %lu\n", &(stack->leftCanary), stack->leftCanary);
+    fprintf(outputFile,
     "\t<b>size</b>     = <b>%lu</b>\n"
-    "\t<b>capacity</b> = <b>%lu</b>\n"
+    "\t<b>capacity</b> = <b>%lu</b>\n", stack->size, stack->capacity);
+    fprintf(outputFile, "\tRIGHT_STACK_INFO_CANARY [%p] = %lu\n", &(stack->rightCanary), stack->rightCanary);
+    fprintf(outputFile,
     "\t<b>data</b><b><font color = 'DeepSkyBlue'>" "[%p]</font></b>:\n"
-    "\t{\n", stack->size, stack->capacity, stack->data);
+    "\t{\n",stack->data);
+
+    if (stack->memoryChunk != NULL) {
+        fprintf(outputFile, "<b><font color = 'DeepPink'>\t" "LEFT_DATA_CANARY [%p]</b></font> = %" SPECIFICATOR_TYPE "\n", stack->memoryChunk, *(stack->memoryChunk));
+    }
 
     if (stack->capacity > 50) {
 
         for (size_t index = 0; index < 50; index++) {
 
             if (index < stack->size) {
-                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu]" "</b></font> = ", index);
+                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu, %p]" "</b></font> = ", index, &(stack->data[index]));
                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "\n", stack->data[index]);
             }
 
             else {
-                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu]" "</b></font> = ", index);
+                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu, %p]" "</b></font> = ", index, &(stack->data[index]));
                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "<font color = 'Red'><b> [POISON]</b></font>\n", stack->data[index]);
             }
         }
@@ -114,12 +121,12 @@ int stackDumpHtml(stack *stack) {
         for (size_t index = stack->capacity - 5; index < stack->capacity; index++) {
 
             if (index < stack->size) {
-                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu]" "</b></font> = ", index);
+                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu, %p]" "</b></font> = ", index, &(stack->data[index]));
                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "\n", stack->data[index]);
             }
 
             else {
-                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu]" "</b></font> = ", index);
+                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu, %p]" "</b></font> = ", index, &(stack->data[index]));
                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "<font color = 'Red'><b> [POISON]</b></font>\n", stack->data[index]);
             }
         }
@@ -129,15 +136,19 @@ int stackDumpHtml(stack *stack) {
         for (size_t index = 0; index < stack->capacity; index++) {
 
             if (index < stack->size) {
-                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu]" "</b></font> = ", index);
+                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu, %p]" "</b></font> = ", index, &(stack->data[index]));
                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "\n", stack->data[index]);
             }
 
             else {
-                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu]" "</b></font> = ", index);
+                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu, %p]" "</b></font> = ", index, &(stack->data[index]));
                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "<font color = 'Red'><b> [POISON]</b></font>\n", stack->data[index]);
             }
         }
+    }
+
+    if (stack->memoryChunk != NULL) {
+        fprintf(outputFile, "<b><font color = 'DeepPink'>\t" "RIGHT_DATA_CANARY [%p]</b></font> = %" SPECIFICATOR_TYPE "\n", stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY), *(stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY)));
     }
 
     fprintf(outputFile, "\t}\n}\n\n");
