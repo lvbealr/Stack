@@ -7,12 +7,12 @@
 #include "customWarning/customWarning.h"
 
 #ifndef _NDEBUG
-    #define INIT_STACK(st) st.bornFileName = __FILE__,                \
-                           st.bornLine     = __LINE__,                \
+    #define INIT_STACK(st) st.bornFileName      = __FILE__,                \
+                           st.bornLine          = __LINE__,                \
                            st.bornFuncPrototype = __PRETTY_FUNCTION__
 
 #else
-    #define INIT(st)
+    #define INIT_STACK(st)
     
 #endif
 
@@ -35,12 +35,12 @@ static int setDumpFileName(stack *stack) {
     return 0;
 }
 
-int main(int argc, char *argv[]) {
+int main() {
 
     stack Stack = {INIT_STACK(Stack)};
     setDumpFileName(&Stack);
 
-    stackInitialize(&Stack, 20);
+    stackInitialize(&Stack, START_STACK_SIZE);
 
     //////////////////////////////////////////////////////////
     for (int testIndex = 0; testIndex < 25; testIndex++) {  //
