@@ -49,6 +49,8 @@ const uint64_t CANARY = 5051;
                 printf("FUCK CANARY");                                         \
                 assert(0);                                                     \
             }                                                                  \
+    
+    #define LEFT_CANARY_SHIFT 1
 
 #else
     #define GET_OBJECT_LAST_INFO(st)
@@ -57,9 +59,11 @@ const uint64_t CANARY = 5051;
     #define CONST_CANARY_INITIALIZE(constCanary)
     #define DATA_BEGIN_CANARY_INITIALIZE(stack)
     #define DATA_END_CANARY_INITIALIZE(stack, canaryPosition)
-    #define CANARY_SIZE(canary)
+    #define CANARY_SIZE(canary) 0
     #define INFO_CANARY_CHECK(infoCanary)
     #define DATA_CANARY_CHECK(dataCanary, dataCanaryPosition)
+    #define CHECK_CANARY()
+    #define LEFT_CANARY_SHIFT 0
 
 #endif // NDEBUG
 
@@ -102,7 +106,7 @@ enum stackError {
 
 // FUNCTION PROTOTYPES //
 int stackInitialize (stack *stack, size_t size);
-int stackFillPoison (stack *stack, size_t fillSize);
+int stackFillPoison (stack *stack);
 int stackDestruct   (stack *stack);
 int stackPush       (stack *stack, stack_t value);
 int stackPop        (stack *stack, stack_t *variable);

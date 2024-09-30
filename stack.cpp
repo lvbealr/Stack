@@ -21,20 +21,14 @@ int stackInitialize(stack *stack, size_t capacity) {
     stack->size         = 0;
     stack->capacity     = capacity;
     stack->memoryChunk  = (stack_t *)calloc(capacity + 2 * CANARY_SIZE(CANARY), sizeof(stack_t));
-    stack->data         = stack->memoryChunk + 1;
+    stack->data         = stack->memoryChunk + LEFT_CANARY_SHIFT;
 
     DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
     DATA_END_CANARY_INITIALIZE(stack->memoryChunk, stack->capacity + CANARY_SIZE(CANARY));
 
-    printf("[START ADDRESS] %p\t[START VALUE] %" SPECIFICATOR_TYPE "\n",
-            stack->memoryChunk, *(stack->memoryChunk));
-    printf("[END ADDRESS] %p\t[END VALUE] %" SPECIFICATOR_TYPE "\n",
-            stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY), 
-          *(stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY)));
-
     customWarning(stack->data != NULL, 1);
 
-    stackFillPoison(stack, stack->capacity);
+    stackFillPoison(stack);
 
     DUMP_(stack);
 
@@ -43,20 +37,14 @@ int stackInitialize(stack *stack, size_t capacity) {
     return 0;
 }
 
-int stackFillPoison(stack *stack, size_t fillSize) {
+int stackFillPoison(stack *stack) {
     customWarning(!stackCheck(stack), 1);
 
-    for (size_t index = stack->size; index < fillSize; index++) {
+    for (size_t index = stack->size; index < stack->capacity; index++) {
         stack->data[index] = POISON_VALUE;
     }
 
     DUMP_(stack);
-
-    printf("[START ADDRESS] %p\t[START VALUE] %" SPECIFICATOR_TYPE "\n",
-            stack->memoryChunk, *(stack->memoryChunk));
-    printf("[END ADDRESS] %p\t[END VALUE] %" SPECIFICATOR_TYPE "\n",
-            stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY),
-          *(stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY)));
 
     customWarning(!stackCheck(stack), 1);
 
@@ -68,12 +56,6 @@ int stackDestruct(stack *stack) {
 
     stack->size     = 0;
     stack->capacity = 0;
-
-    printf("[START ADDRESS] %p\t[START VALUE] %" SPECIFICATOR_TYPE "\n",
-            stack->memoryChunk, *(stack->memoryChunk));
-    printf("[END ADDRESS] %p\t[END VALUE] %" SPECIFICATOR_TYPE "\n",
-        stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY),
-      *(stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY)));
 
     free(stack->memoryChunk);
     stack->memoryChunk = NULL;
@@ -101,12 +83,6 @@ int stackPush(stack *stack, stack_t value) {
 
     DUMP_(stack);
 
-    printf("[START ADDRESS] %p\t[START VALUE] %" SPECIFICATOR_TYPE "\n",
-            stack->memoryChunk, *(stack->memoryChunk));
-    printf("[END ADDRESS] %p\t[END VALUE] %" SPECIFICATOR_TYPE "\n",
-            stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY),
-          *(stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY)));
-
     customWarning(!stackCheck(stack), 1);
 
     return 0;
@@ -126,12 +102,6 @@ int stackPop(stack *stack, stack_t *variable) {
     stack->data[stack->size + 1] = POISON_VALUE;
 
     DUMP_(stack);
-
-    printf("[START ADDRESS] %p\t[START VALUE] %" SPECIFICATOR_TYPE "\n",
-            stack->memoryChunk, *(stack->memoryChunk));
-    printf("[END ADDRESS] %p\t[END VALUE] %" SPECIFICATOR_TYPE "\n",
-            stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY),
-          *(stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY)));
 
     customWarning(!stackCheck(stack),  1);
 
@@ -155,10 +125,10 @@ int stackResize(stack *stack, const changeMemory changeMemoryMode) {
         DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
         DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, stack->capacity * 2 + CANARY_SIZE(CANARY));
 
-        stack->data         = stack->memoryChunk + 1;
+        stack->data         = stack->memoryChunk + LEFT_CANARY_SHIFT;
         stack->capacity    *= 2;
 
-        stackFillPoison(stack, stack->capacity); // TODO customRealloc (realloc + fill)
+        stackFillPoison(stack); // TODO customRealloc (realloc + fill)
     }
 
     else if (changeMemoryMode == DUMP_MEMORY) {
@@ -175,14 +145,8 @@ int stackResize(stack *stack, const changeMemory changeMemoryMode) {
         stack->data         = stack->memoryChunk + 1;
         stack->capacity    /= 2;
 
-        stackFillPoison(stack, stack->capacity); // TODO customRealloc (realloc + fill)
+        stackFillPoison(stack); // TODO customRealloc (realloc + fill)
     }
-    
-    printf("[START ADDRESS] %p\t[START VALUE] %" SPECIFICATOR_TYPE "\n",
-            stack->memoryChunk, *(stack->memoryChunk));
-    printf("[END ADDRESS] %p\t[END VALUE] %" SPECIFICATOR_TYPE "\n",
-            stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY),
-          *(stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY)));
 
     DUMP_(stack);
 
@@ -191,11 +155,7 @@ int stackResize(stack *stack, const changeMemory changeMemoryMode) {
     return 0;
 }
 
-int stackCheck(stack *stack) {    
-    printf("[l] %p %lu\n", &(stack->leftCanary), stack->leftCanary);
-    printf("[r] %p %lu\n", &(stack->rightCanary), stack->rightCanary);
-    printf("[memoryChunk] %p, [capacity] %lu\n",
-            stack->memoryChunk, stack->capacity);
+int stackCheck(stack *stack) {
     if (stack->memoryChunk != NULL) {
         CHECK_CANARY();
     }
