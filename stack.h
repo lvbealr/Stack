@@ -21,8 +21,8 @@ const uint64_t CANARY = 5051;
         stackDumpHtml(st);                                                     \
     }
 
-    #define CANARY_INITIALIZE(constCanary)                                     \
-        uint64_t constCanary = CANARY;                                         \
+    #define CANARY_INITIALIZE(canary)                                          \
+        uint64_t canary = CANARY;                                              \
                 
     #define DATA_BEGIN_CANARY_INITIALIZE(stack)                                \
         *(stack)                   = CANARY;                                   \
@@ -51,7 +51,12 @@ const uint64_t CANARY = 5051;
                 assert(0);                                                     \
             }                                                                  \
     
-    #define LEFT_CANARY_SHIFT 1
+    #define LEFT_CANARY_SHIFT CANARY_SIZE(CANARY)
+
+    #define CANARY_DESTRUCT() {                                                \
+        stack->leftCanary  = 0;                                                \
+        stack->rightCanary = 0;                                                \
+    }                                                                          \
 
 #else
     #define GET_OBJECT_LAST_INFO(st)

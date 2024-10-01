@@ -20,7 +20,7 @@ int stackInitialize(stack *stack, size_t capacity) {
     stack->size         = 0;
     stack->capacity     = capacity;
     stack->memoryChunk  = (stack_t *)calloc(capacity + 2 * CANARY_SIZE(CANARY), sizeof(stack_t));
-    stack->data         = stack->memoryChunk + LEFT_CANARY_SHIFT;
+    stack->data         = stack->memoryChunk + LEFT_CANARY_SHIFT; // TODO why 1 not 2
 
     DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
     DATA_END_CANARY_INITIALIZE(stack->memoryChunk, stack->capacity + CANARY_SIZE(CANARY));
@@ -58,6 +58,8 @@ int stackDestruct(stack *stack) {
 
     free(stack->memoryChunk);
     stack->memoryChunk = NULL;
+
+    CANARY_DESTRUCT();
 
     DUMP_(stack);
 
