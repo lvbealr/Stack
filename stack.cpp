@@ -13,7 +13,6 @@
 // SOLVE THIS ??????????
 
 // TODO ALL POINTERS TO NULL AFTER FREE!!!!!!
-// TODO CONDITIONAL COMPILATION (MEMORY CHUNK & DATA)
 
 int stackInitialize(stack *stack, size_t capacity) {
     customWarning(!stackCheck(stack), 1);
@@ -136,7 +135,7 @@ int stackResize(stack *stack, const changeMemory changeMemoryMode) {
         stack->data = (stack_t *)realloc(stack->memoryChunk,
                                          sizeof(stack_t) * (stack->capacity / 2 + CANARY_SIZE(CANARY) * 2));
         // TODO WHAT THE FUCK IT WORKS???
-
+        s
         customWarning(stack->memoryChunk != NULL, 1);
 
         DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
@@ -162,5 +161,14 @@ int stackCheck(stack *stack) {
     customWarning(stack           != NULL,            1);
     customWarning(stack->size     <= stack->capacity, 1);
 
+    return 0;
+}
+
+int printStack(stack *stack) {
+    customWarning(!stackCheck(stack), 1);
+
+    for (size_t index = 0; index < stack->capacity; index++) {
+        printf("[%lu, %p] = %" SPECIFICATOR_TYPE "\n", index, stack->data + index, stack->data[index]);
+    }
     return 0;
 }

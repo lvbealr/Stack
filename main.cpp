@@ -55,6 +55,8 @@ int main() {
     stackPush(&Stack, 999);                                 //
     //////////////////////////////////////////////////////////
 
+    printStack(&Stack);
+
     stackDestruct(&Stack);
 
     return 0;

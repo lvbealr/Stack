@@ -9,6 +9,8 @@
 typedef int stack_t;
 const uint64_t CANARY = 5051;
 
+#define s printf("I love when man fucks me in the ass\n");
+
 #ifndef _NDEBUG
     #define GET_OBJECT_LAST_INFO(st) st->lastUseFileName       = __FILE__;     \
                                      st->lastUseLine           = __LINE__;     \
@@ -19,10 +21,8 @@ const uint64_t CANARY = 5051;
         stackDumpHtml(st);                                                     \
     }
 
-    // #define ON_DEBUG(...) __VA_ARGS__
-
-    #define CONST_CANARY_INITIALIZE(constCanary)                               \
-        const uint64_t constCanary = CANARY;                                   \
+    #define CANARY_INITIALIZE(constCanary)                                     \
+        uint64_t constCanary = CANARY;                                         \
                 
     #define DATA_BEGIN_CANARY_INITIALIZE(stack)                                \
         *(stack)                   = CANARY;                                   \
@@ -46,7 +46,8 @@ const uint64_t CANARY = 5051;
             DATA_CANARY_CHECK(stack->memoryChunk,                              \
                               stack->capacity + CANARY_SIZE(CANARY)))          \
             {                                                                  \
-                printf("FUCK CANARY");                                         \
+                printf("FUCK CANARY!\n");                                      \
+                fflush(stdout);                                                \
                 assert(0);                                                     \
             }                                                                  \
     
@@ -55,8 +56,7 @@ const uint64_t CANARY = 5051;
 #else
     #define GET_OBJECT_LAST_INFO(st)
     #define DUMP_(st)
-    // #define ON_DEBUG(...)
-    #define CONST_CANARY_INITIALIZE(constCanary)
+    #define CANARY_INITIALIZE(constCanary)
     #define DATA_BEGIN_CANARY_INITIALIZE(stack)
     #define DATA_END_CANARY_INITIALIZE(stack, canaryPosition)
     #define CANARY_SIZE(canary) 0
@@ -66,7 +66,6 @@ const uint64_t CANARY = 5051;
     #define LEFT_CANARY_SHIFT 0
 
 #endif // NDEBUG
-
 struct stack {
     const char *bornFileName;
     int         bornLine;
@@ -75,10 +74,10 @@ struct stack {
     int         lastUseLine;
     const char *lastUseFuncPrototype;
     char       *dumpFile;
-    CONST_CANARY_INITIALIZE(leftCanary);
+    CANARY_INITIALIZE(leftCanary);
     size_t      size;
     size_t      capacity;
-    CONST_CANARY_INITIALIZE(rightCanary);
+    CANARY_INITIALIZE(rightCanary);
     stack_t    *memoryChunk;
     stack_t    *data;
 };
@@ -112,7 +111,7 @@ int stackPush       (stack *stack, stack_t value);
 int stackPop        (stack *stack, stack_t *variable);
 int stackResize     (stack *stack, const changeMemory changeMemoryMode);
 int stackCheck      (stack *stack);
+int printStack      (stack *stack);
 // FUNCTION PROTOTYPES //
-
 #endif // STACK_H_
 
