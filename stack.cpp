@@ -13,7 +13,7 @@
 // TODO SOLVE THIS
 
 // TODO ALL POINTERS TO NULL AFTER FREE!!!!!!
-// TODO UINT64_T IN 2 MEMORY CELLS FOR STACK_T (INT) ???? use address
+// TODO UINT64_T IN 2 MEMORY CELLS FOR STACK_T (INT) || USE MEMORY CAST
 
 int stackInitialize(stack *stack, size_t capacity) {
     customWarning(!stackCheck(stack), 1);

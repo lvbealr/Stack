@@ -7,7 +7,6 @@
 #include "privateStack.h"
 
 int main() {
-
     stack *Stack = initializePrivateStack(__FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     //////////////////////////////////////////////////////////

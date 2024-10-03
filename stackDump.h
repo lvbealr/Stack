@@ -6,7 +6,6 @@
 #include "stack.h"
 
 // FUNCTION PROTOTYPES //
-// int stackDump(stack *stack);
 int stackDumpHtml(stack *stack);
 // FUNCTION PROTOTYPES //
 

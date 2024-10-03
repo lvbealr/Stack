@@ -7,7 +7,7 @@
 // TODO HASH IN DEPENDENCE OF TIME
 
 typedef int stack_t;
-const stack_t CANARY = 5051; // TODO DATA_CANARY UINT64_T BUT MEMORY CELL FOR STACK_T = INT (8B vs 4B)
+const stack_t CANARY = 5051; // TODO ALIGN MEMORY!!!
 
 #ifndef _NDEBUG
     #define GET_OBJECT_LAST_INFO(st) st->lastUseFileName       = __FILE__;     \
