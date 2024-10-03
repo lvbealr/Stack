@@ -87,7 +87,7 @@ int stackDumpHtml(stack *stack) {
     }
 
     if (stack->memoryChunk != NULL) {
-        fprintf(outputFile, "<b><font color = 'DeepPink'>\t" "RIGHT_DATA_CANARY [%p]</b></font> = %d\n", (stack_t *)stack->memoryChunk + stack->capacity + sizeof(CANARY), *(stack_t *)(stack->memoryChunk + stack->capacity + sizeof(CANARY)));
+        fprintf(outputFile, "<b><font color = 'DeepPink'>\t" "RIGHT_DATA_CANARY [%p]</b></font> = %d\n", (stack_t *)stack->memoryChunk + stack->capacity + 1, *(stack_t *)(stack->memoryChunk + stack->capacity + 1));
     }
 
     fprintf(outputFile, "\t}\n}\n\n");
