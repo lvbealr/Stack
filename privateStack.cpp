@@ -8,6 +8,7 @@
 
 stack *initializePrivateStack(const char *fileName, int line, const char *function) {
     stack *Stack = (stack *)calloc(1, sizeof(stack));
+    assert(Stack != NULL); // TODO USE MY ASSERT
 
     Stack->leftCanary  = CANARY;
     Stack->rightCanary = CANARY;
@@ -39,6 +40,8 @@ int setDumpFileName(stack *stack) {
     customWarning(stack != NULL, 1);
 
     char *buffer           = (char *)calloc(NAME_BUFFER_SIZE, sizeof(char));
+    customWarning(buffer != NULL, 1);
+    
     const time_t timer     = time(NULL);
     tm *now                = localtime(&timer);
     const char *timeChar   = asctime(now);  
