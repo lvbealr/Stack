@@ -10,7 +10,7 @@ const char *endHtml   = R"(</body></html>)";
 
 #define SPECIFICATOR_TYPE "d"
 
-// сделать подсветку size или элементов разным цветом, если элемент кладут или достают
+// TODO DO BACKLIGHT IN DEPENDENCE OF PUSHING OR POPPING ELEMENT
 
 #ifndef _NDEBUG
 
@@ -98,7 +98,7 @@ int stackDumpHtml(stack *stack) {
     "\t{\n",stack->data);
 
     if (stack->memoryChunk != NULL) {
-        fprintf(outputFile, "<b><font color = 'DeepPink'>\t" "LEFT_DATA_CANARY [%p]</b></font> = %" SPECIFICATOR_TYPE "\n", stack->memoryChunk, *(stack->memoryChunk));
+        fprintf(outputFile, "<b><font color = 'DeepPink'>\t" "LEFT_DATA_CANARY [%p]</b></font> = %lu\n", stack->memoryChunk, *(uint64_t *)(stack->memoryChunk));
     }
 
     if (stack->capacity > 50) {
@@ -111,7 +111,7 @@ int stackDumpHtml(stack *stack) {
             }
 
             else {
-                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu, %p]" "</b></font> = ", index, &(stack->data[index]));
+                fprintf(outputFile, "<b><font color = 'Black'>\t " "[%lu, %p]" "</b></font> = ", index, &(stack->data[index]));
                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "<font color = 'Red'><b> [POISON]</b></font>\n", stack->data[index]);
             }
         }
@@ -126,7 +126,7 @@ int stackDumpHtml(stack *stack) {
             }
 
             else {
-                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu, %p]" "</b></font> = ", index, &(stack->data[index]));
+                fprintf(outputFile, "<b><font color = 'Black'>\t " "[%lu, %p]" "</b></font> = ", index, &(stack->data[index]));
                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "<font color = 'Red'><b> [POISON]</b></font>\n", stack->data[index]);
             }
         }
@@ -141,14 +141,14 @@ int stackDumpHtml(stack *stack) {
             }
 
             else {
-                fprintf(outputFile, "<b><font color = 'DeepPink'>\t*" "[%lu, %p]" "</b></font> = ", index, &(stack->data[index]));
+                fprintf(outputFile, "<b><font color = 'Black'>\t " "[%lu, %p]" "</b></font> = ", index, &(stack->data[index]));
                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "<font color = 'Red'><b> [POISON]</b></font>\n", stack->data[index]);
             }
         }
     }
 
     if (stack->memoryChunk != NULL) {
-        fprintf(outputFile, "<b><font color = 'DeepPink'>\t" "RIGHT_DATA_CANARY [%p]</b></font> = %" SPECIFICATOR_TYPE "\n", stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY), *(stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY)));
+        fprintf(outputFile, "<b><font color = 'DeepPink'>\t" "RIGHT_DATA_CANARY [%p]</b></font> = %lu\n", (uint64_t *)stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY), *(uint64_t *)(stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY)));
     }
 
     fprintf(outputFile, "\t}\n}\n\n");

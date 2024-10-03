@@ -7,7 +7,8 @@
 #include "customWarning/customWarning.h"
 
 #ifndef _NDEBUG
-    #define INIT_STACK(st) st.bornFileName      = __FILE__,                \
+    #define INIT_STACK(st) st.leftCanary        = CANARY,                  \
+                           st.bornFileName      = __FILE__,                \
                            st.bornLine          = __LINE__,                \
                            st.bornFuncPrototype = __PRETTY_FUNCTION__
 
@@ -35,6 +36,8 @@ static int setDumpFileName(stack *stack) {
     return 0;
 }
 
+// TODO FIX SANITIZER ERROR DURING POP AND RESIZE
+
 int main() {
 
     stack Stack = {INIT_STACK(Stack)};
@@ -47,15 +50,45 @@ int main() {
         stackPush(&Stack, testIndex);                       //
     }                                                       //
                                                             //
-    stack_t x = 0;                                          // 
+    // Stack.leftCanary = 123;                                 //
                                                             //
+    stack_t x = 0;                                          //
+                                                            //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
+    stackPop(&Stack, &x);                                   //
     stackPop(&Stack, &x);                                   //
     stackPop(&Stack, &x);                                   //
                                                             //
     stackPush(&Stack, 999);                                 //
     //////////////////////////////////////////////////////////
 
-    printStack(&Stack);
+    // printStack(&Stack);
 
     stackDestruct(&Stack);
 

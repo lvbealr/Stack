@@ -8,11 +8,12 @@
 
 #define SPECIFICATOR_TYPE "d"
 
-// WHAT BREAK BY WARNING
-// WHAT BREAK BY ASSERT 
-// SOLVE THIS ??????????
+// TODO WHAT BREAK BY WARNING
+// TODO WHAT BREAK BY ASSERT 
+// TODO SOLVE THIS
 
 // TODO ALL POINTERS TO NULL AFTER FREE!!!!!!
+// TODO UINT64_T IN 2 MEMORY CELLS FOR STACK_T (INT) ???? use address
 
 int stackInitialize(stack *stack, size_t capacity) {
     customWarning(!stackCheck(stack), 1);
@@ -20,10 +21,10 @@ int stackInitialize(stack *stack, size_t capacity) {
     stack->size         = 0;
     stack->capacity     = capacity;
     stack->memoryChunk  = (stack_t *)calloc(capacity + 2 * CANARY_SIZE(CANARY), sizeof(stack_t));
-    stack->data         = stack->memoryChunk + LEFT_CANARY_SHIFT; // TODO why 1 not 2
+    stack->data         = stack->memoryChunk + CANARY_SIZE(CANARY);
 
     DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
-    DATA_END_CANARY_INITIALIZE(stack->memoryChunk, stack->capacity + CANARY_SIZE(CANARY));
+    DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, stack->capacity + CANARY_SIZE(CANARY));
 
     customWarning(stack->data != NULL, 1);
 
@@ -64,7 +65,7 @@ int stackDestruct(stack *stack) {
     DUMP_(stack);
 
     free(stack->dumpFile);
-    stack->dumpFile    = NULL;
+    stack->dumpFile = NULL;
 
     customWarning(!stackCheck(stack), 1);
 
@@ -99,8 +100,8 @@ int stackPop(stack *stack, stack_t *variable) {
         stackResize(stack, DUMP_MEMORY);
     }
 
-    *variable = stack->data[--stack->size];
-    stack->data[stack->size + 1] = POISON_VALUE;
+    *variable                = stack->data[--stack->size];
+    stack->data[stack->size] = POISON_VALUE;
 
     DUMP_(stack);
 
@@ -110,40 +111,36 @@ int stackPop(stack *stack, stack_t *variable) {
     
 }
 
-int stackResize(stack *stack, const changeMemory changeMemoryMode) {
+static int stackResize(stack *stack, const changeMemory changeMemoryMode) {
     customWarning(!stackCheck(stack), 1);
 
     DUMP_(stack);
 
     if (changeMemoryMode == ADD_MEMORY) {
-        // TODO WHAT THE FUCK IT WORKS???
         stack->memoryChunk = (stack_t *)realloc(stack->memoryChunk,
                                                 sizeof(stack_t) * (stack->capacity * 2 + CANARY_SIZE(CANARY) * 2));
-        // TODO WHAT THE FUCK IT WORKS???
 
         customWarning(stack->memoryChunk != NULL, 1);
 
         DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
         DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, stack->capacity * 2 + CANARY_SIZE(CANARY));
 
-        stack->data         = stack->memoryChunk + LEFT_CANARY_SHIFT;
+        stack->data         = stack->memoryChunk + CANARY_SIZE(CANARY);
         stack->capacity    *= 2;
 
         stackFillPoison(stack); // TODO customRealloc (realloc + fill)
     }
 
     else if (changeMemoryMode == DUMP_MEMORY) {
-        // TODO WHAT THE FUCK IT WORKS???
-        stack->data = (stack_t *)realloc(stack->memoryChunk,
+        stack->memoryChunk = (stack_t *)realloc(stack->memoryChunk,
                                          sizeof(stack_t) * (stack->capacity / 2 + CANARY_SIZE(CANARY) * 2));
-        // TODO WHAT THE FUCK IT WORKS???
-        s
+
         customWarning(stack->memoryChunk != NULL, 1);
 
         DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
         DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, stack->capacity / 2 + CANARY_SIZE(CANARY));
 
-        stack->data         = stack->memoryChunk + 1;
+        stack->data         = stack->memoryChunk + CANARY_SIZE(CANARY);
         stack->capacity    /= 2;
 
         stackFillPoison(stack); // TODO customRealloc (realloc + fill)
@@ -157,11 +154,13 @@ int stackResize(stack *stack, const changeMemory changeMemoryMode) {
 }
 
 int stackCheck(stack *stack) {
+    customWarning(stack              != NULL,            1);
+    // customWarning(stack->memoryChunk != NULL,            1);
+
     if (stack->memoryChunk != NULL) {
         CHECK_CANARY();
     }
-    customWarning(stack           != NULL,            1);
-    customWarning(stack->size     <= stack->capacity, 1);
+    customWarning(stack->size        <= stack->capacity, 1);
 
     return 0;
 }
@@ -172,5 +171,6 @@ int printStack(stack *stack) {
     for (size_t index = 0; index < stack->capacity; index++) {
         printf("[%lu, %p] = %" SPECIFICATOR_TYPE "\n", index, stack->data + index, stack->data[index]);
     }
+
     return 0;
 }

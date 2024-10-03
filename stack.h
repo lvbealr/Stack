@@ -2,19 +2,17 @@
 #define STACK_H_
 
 #include <cstdint>
-#include <cassert>
+#include <cassert> // TODO USE MY ASSERT INSTEAD OF ASSERT
 
-// TODO DATA_CANARY UINT64_T BUT MEMORY CELL FOR STACK_T = INT
+// TODO HASH IN DEPENDENCE OF TIME
 
 typedef int stack_t;
-const uint64_t CANARY = 5051;
-
-#define s printf("I love when man fucks me in the ass\n");
+const uint64_t CANARY = 0x14C91FB589; // TODO DATA_CANARY UINT64_T BUT MEMORY CELL FOR STACK_T = INT (8B vs 4B)
 
 #ifndef _NDEBUG
     #define GET_OBJECT_LAST_INFO(st) st->lastUseFileName       = __FILE__;     \
                                      st->lastUseLine           = __LINE__;     \
-                                     st->lastUseFuncPrototype  = __FUNCTION__; 
+                                     st->lastUseFuncPrototype  = __FUNCTION__;
 
     #define DUMP_(st) {                                                        \
         GET_OBJECT_LAST_INFO(st);                                              \
@@ -24,12 +22,18 @@ const uint64_t CANARY = 5051;
     #define CANARY_INITIALIZE(canary)                                          \
         uint64_t canary = CANARY;                                              \
                 
-    #define DATA_BEGIN_CANARY_INITIALIZE(stack)                                \
-        *(stack)                   = CANARY;                                   \
+    #define DATA_BEGIN_CANARY_INITIALIZE(memoryCell)                           \
+        printf("LEFT: %p\n", memoryCell);                                      \
+        uint64_t *beginCanaryCell = (uint64_t *)memoryCell;                    \
+        *beginCanaryCell          = CANARY;                                    \
     
-    #define DATA_END_CANARY_INITIALIZE(stack, canaryPosition)                  \
-        *(stack + canaryPosition)  = CANARY;                                   \
-                
+    #define DATA_END_CANARY_INITIALIZE(memoryCell, canaryPosition)             \
+        printf("RIGHT: %p\n", memoryCell + canaryPosition);                    \
+        uint64_t *endCanaryCell   = (uint64_t *)(memoryCell + canaryPosition); \
+        *endCanaryCell            = CANARY;                                    \
+        printf("%lu\n", *endCanaryCell);                                       \
+        printf("%lu\n", *(uint64_t *)(memoryCell + canaryPosition));           \
+
     #define CANARY_SIZE(canary)                                                \
         sizeof(canary) / sizeof(stack_t)                                       \
                 
@@ -37,7 +41,7 @@ const uint64_t CANARY = 5051;
         infoCanary != CANARY                                                   \
                 
     #define DATA_CANARY_CHECK(dataCanary, dataCanaryPosition)                  \
-        *(dataCanary + dataCanaryPosition) != CANARY                           \
+        *(uint64_t *)(dataCanary + dataCanaryPosition) != CANARY               \
                 
     #define CHECK_CANARY()                                                     \
         if (INFO_CANARY_CHECK(stack->leftCanary)            ||                 \
@@ -50,8 +54,6 @@ const uint64_t CANARY = 5051;
                 fflush(stdout);                                                \
                 assert(0);                                                     \
             }                                                                  \
-    
-    #define LEFT_CANARY_SHIFT CANARY_SIZE(CANARY)
 
     #define CANARY_DESTRUCT() {                                                \
         stack->leftCanary  = 0;                                                \
@@ -61,17 +63,20 @@ const uint64_t CANARY = 5051;
 #else
     #define GET_OBJECT_LAST_INFO(st)
     #define DUMP_(st)
-    #define CANARY_INITIALIZE(constCanary)
+    #define CANARY_INITIALIZE(canary)
     #define DATA_BEGIN_CANARY_INITIALIZE(stack)
     #define DATA_END_CANARY_INITIALIZE(stack, canaryPosition)
     #define CANARY_SIZE(canary) 0
     #define INFO_CANARY_CHECK(infoCanary)
     #define DATA_CANARY_CHECK(dataCanary, dataCanaryPosition)
     #define CHECK_CANARY()
-    #define LEFT_CANARY_SHIFT 0
 
 #endif // NDEBUG
+
+// TODO INFO STACK STRUCT
+
 struct stack {
+    CANARY_INITIALIZE(leftCanary);
     const char *bornFileName;
     int         bornLine;
     const char *bornFuncPrototype;
@@ -79,12 +84,11 @@ struct stack {
     int         lastUseLine;
     const char *lastUseFuncPrototype;
     char       *dumpFile;
-    CANARY_INITIALIZE(leftCanary);
     size_t      size;
     size_t      capacity;
-    CANARY_INITIALIZE(rightCanary);
     stack_t    *memoryChunk;
     stack_t    *data;
+    CANARY_INITIALIZE(rightCanary);
 };
 
 enum changeMemory {
@@ -92,10 +96,10 @@ enum changeMemory {
     ADD_MEMORY  = 1
 };
 
-const size_t START_STACK_SIZE = 20;
-const size_t NAME_BUFFER_SIZE = 40;
+const size_t  START_STACK_SIZE = 20;
+const size_t  NAME_BUFFER_SIZE = 40;
 
-const stack_t POISON_VALUE = -666; // CHANGE IN DEPENDENCE OF STACK_T TYPE
+const stack_t POISON_VALUE     = -666; // TODO CHANGE IN DEPENDENCE OF STACK_T TYPE
 
 // TODO stackError functions
 // TODO check stackErrors
@@ -109,14 +113,15 @@ enum stackError {
 };
 
 // FUNCTION PROTOTYPES //
-int stackInitialize (stack *stack, size_t size);
-int stackFillPoison (stack *stack);
-int stackDestruct   (stack *stack);
-int stackPush       (stack *stack, stack_t value);
-int stackPop        (stack *stack, stack_t *variable);
-int stackResize     (stack *stack, const changeMemory changeMemoryMode);
-int stackCheck      (stack *stack);
-int printStack      (stack *stack);
+int        stackInitialize        (stack *stack, size_t size);
+int        stackFillPoison        (stack *stack);
+int        stackDestruct          (stack *stack);
+int        stackPush              (stack *stack, stack_t value);
+int        stackPop               (stack *stack, stack_t *variable);
+static int stackResize            (stack *stack, const changeMemory changeMemoryMode);
+int        stackCheck             (stack *stack);
+int        printStack             (stack *stack);
 // FUNCTION PROTOTYPES //
+
 #endif // STACK_H_
 
