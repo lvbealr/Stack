@@ -38,6 +38,8 @@ static int setDumpFileName(stack *stack) {
 
 // TODO FIX SANITIZER ERROR DURING POP AND RESIZE
 
+// privateStack branch?
+
 int main() {
 
     stack Stack = {INIT_STACK(Stack)};
