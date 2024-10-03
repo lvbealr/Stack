@@ -44,7 +44,7 @@ const stack_t CANARY = 5051; // TODO DATA_CANARY UINT64_T BUT MEMORY CELL FOR ST
             INFO_CANARY_CHECK(stack->rightCanary)           ||                 \
             DATA_CANARY_CHECK(stack->memoryChunk, 0)        ||                 \
             DATA_CANARY_CHECK(stack->memoryChunk,                              \
-                              stack->capacity + sizeof(CANARY)))               \
+                              stack->capacity + 1))                            \
             {                                                                  \
                 printf("FUCK CANARY!\n");                                      \
                 fflush(stdout);                                                \

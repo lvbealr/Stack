@@ -3,96 +3,56 @@
 #include <cstring>
 #include <ctime>
 
-#include "stack.h"
 #include "customWarning/customWarning.h"
-
-#ifndef _NDEBUG
-    #define INIT_STACK(st) st.leftCanary        = CANARY,                  \
-                           st.bornFileName      = __FILE__,                \
-                           st.bornLine          = __LINE__,                \
-                           st.bornFuncPrototype = __PRETTY_FUNCTION__
-
-#else
-    #define INIT_STACK(st)
-    
-#endif
-
-static int setDumpFileName(stack *stack) {
-    customWarning(stack != NULL, 1);
-
-    char *buffer           = (char *)calloc(NAME_BUFFER_SIZE, sizeof(char));
-    const time_t timer     = time(NULL);
-    tm *now                = localtime(&timer);
-    const char *timeChar   = asctime(now);  
-    size_t timeCharLength  = strlen(timeChar) - 1;
-    const char *folderName = "dumps/";
-
-    strcpy(buffer, folderName);
-    strncpy(buffer + strlen(folderName), timeChar, timeCharLength);
-    strcat(buffer, ".html");
-
-    stack->dumpFile        = buffer;
-
-    return 0;
-}
-
-// TODO FIX SANITIZER ERROR DURING POP AND RESIZE
-
-// privateStack branch?
+#include "privateStack.h"
 
 int main() {
 
-    stack Stack = {INIT_STACK(Stack)};
-    setDumpFileName(&Stack);
-
-    stackInitialize(&Stack, START_STACK_SIZE);
+    stack *Stack = initializePrivateStack(__FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     //////////////////////////////////////////////////////////
     for (int testIndex = 0; testIndex < 25; testIndex++) {  //
-        stackPush(&Stack, testIndex);                       //
+        stackPush(Stack, testIndex);                        //
     }                                                       //
                                                             //
-    // Stack.leftCanary = 123;                                 //
                                                             //
     stack_t x = 0;                                          //
                                                             //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
-    stackPop(&Stack, &x);                                   //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
+    stackPop(Stack, &x);                                    //
                                                             //
-    stackPush(&Stack, 999);                                 //
+    stackPush(Stack, 999);                                  //
     //////////////////////////////////////////////////////////
 
-    // printStack(&Stack);
-
-    stackDestruct(&Stack);
+    destructPrivateStack(Stack);
 
     return 0;
 }
