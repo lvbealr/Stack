@@ -7,7 +7,7 @@
 // TODO HASH IN DEPENDENCE OF TIME
 
 typedef int stack_t;
-const uint64_t CANARY = 0x14C91FB589; // TODO DATA_CANARY UINT64_T BUT MEMORY CELL FOR STACK_T = INT (8B vs 4B)
+const stack_t CANARY = 5051; // TODO DATA_CANARY UINT64_T BUT MEMORY CELL FOR STACK_T = INT (8B vs 4B)
 
 #ifndef _NDEBUG
     #define GET_OBJECT_LAST_INFO(st) st->lastUseFileName       = __FILE__;     \
@@ -20,19 +20,15 @@ const uint64_t CANARY = 0x14C91FB589; // TODO DATA_CANARY UINT64_T BUT MEMORY CE
     }
 
     #define CANARY_INITIALIZE(canary)                                          \
-        uint64_t canary = CANARY;                                              \
+        stack_t canary = CANARY;                                               \
                 
     #define DATA_BEGIN_CANARY_INITIALIZE(memoryCell)                           \
-        printf("LEFT: %p\n", memoryCell);                                      \
-        uint64_t *beginCanaryCell = (uint64_t *)memoryCell;                    \
+        stack_t *beginCanaryCell = (stack_t *)memoryCell;                      \
         *beginCanaryCell          = CANARY;                                    \
     
     #define DATA_END_CANARY_INITIALIZE(memoryCell, canaryPosition)             \
-        printf("RIGHT: %p\n", memoryCell + canaryPosition);                    \
-        uint64_t *endCanaryCell   = (uint64_t *)(memoryCell + canaryPosition); \
+        stack_t *endCanaryCell   = (stack_t *)(memoryCell + canaryPosition);   \
         *endCanaryCell            = CANARY;                                    \
-        printf("%lu\n", *endCanaryCell);                                       \
-        printf("%lu\n", *(uint64_t *)(memoryCell + canaryPosition));           \
 
     #define CANARY_SIZE(canary)                                                \
         sizeof(canary) / sizeof(stack_t)                                       \
@@ -41,14 +37,14 @@ const uint64_t CANARY = 0x14C91FB589; // TODO DATA_CANARY UINT64_T BUT MEMORY CE
         infoCanary != CANARY                                                   \
                 
     #define DATA_CANARY_CHECK(dataCanary, dataCanaryPosition)                  \
-        *(uint64_t *)(dataCanary + dataCanaryPosition) != CANARY               \
+        *(stack_t *)(dataCanary + dataCanaryPosition) != CANARY                \
                 
     #define CHECK_CANARY()                                                     \
         if (INFO_CANARY_CHECK(stack->leftCanary)            ||                 \
             INFO_CANARY_CHECK(stack->rightCanary)           ||                 \
             DATA_CANARY_CHECK(stack->memoryChunk, 0)        ||                 \
             DATA_CANARY_CHECK(stack->memoryChunk,                              \
-                              stack->capacity + CANARY_SIZE(CANARY)))          \
+                              stack->capacity + sizeof(CANARY)))               \
             {                                                                  \
                 printf("FUCK CANARY!\n");                                      \
                 fflush(stdout);                                                \
@@ -70,6 +66,7 @@ const uint64_t CANARY = 0x14C91FB589; // TODO DATA_CANARY UINT64_T BUT MEMORY CE
     #define INFO_CANARY_CHECK(infoCanary)
     #define DATA_CANARY_CHECK(dataCanary, dataCanaryPosition)
     #define CHECK_CANARY()
+    #define CANARY_DESTRUCT()
 
 #endif // NDEBUG
 
@@ -96,7 +93,6 @@ enum changeMemory {
     ADD_MEMORY  = 1
 };
 
-const size_t  START_STACK_SIZE = 20;
 const size_t  NAME_BUFFER_SIZE = 40;
 
 const stack_t POISON_VALUE     = -666; // TODO CHANGE IN DEPENDENCE OF STACK_T TYPE
@@ -113,11 +109,7 @@ enum stackError {
 };
 
 // FUNCTION PROTOTYPES //
-int        stackInitialize        (stack *stack, size_t size);
 int        stackFillPoison        (stack *stack);
-int        stackDestruct          (stack *stack);
-int        stackPush              (stack *stack, stack_t value);
-int        stackPop               (stack *stack, stack_t *variable);
 static int stackResize            (stack *stack, const changeMemory changeMemoryMode);
 int        stackCheck             (stack *stack);
 int        printStack             (stack *stack);

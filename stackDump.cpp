@@ -16,67 +16,6 @@ const char *endHtml   = R"(</body></html>)";
 
 size_t previousSize = 0;
 
-// int stackDump(stack *stack) {
-//     FILE *outputFile = fopen(stack->dumpFile, "a");
-//     customWarning(outputFile != NULL, 1);
-
-//     fprintf(outputFile, "stack [%p] at %s:%d (%s) born at %s:%d (%s)\n",
-//                         stack, stack->lastUseFileName, stack->lastUseLine,
-//                         stack->lastUseFuncPrototype, stack->bornFileName,
-//                         stack->bornLine, stack->bornFuncPrototype);
-
-//     fprintf(outputFile, "\t{\n\tsize     = %lu\n\tcapacity = %lu\n\tdata[%p]:\n\t{\n",
-//                         stack->size, stack->capacity, stack->data);
-
-//     if (stack->capacity > 50) {
-//         for (size_t index = 0; index < 50; index++) {
-
-//             if (index < stack->size) {
-//                 fprintf(outputFile, "\t*[%lu] = ", index);
-//                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "\n", stack->data[index]);
-//             }
-
-//             else {
-//                 fprintf(outputFile, "\t [%lu] = \n", index);
-//             }
-//         }
-
-//         fprintf(outputFile, "\t ...\n");
-
-//         for (size_t index = stack->capacity - 5; index < stack->capacity; index++) {
-
-//             if (index < stack->size) {
-//                 fprintf(outputFile, "\t*[%lu] = ", index);
-//                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "\n", stack->data[index]);
-//             }
-
-//             else {
-//                 fprintf(outputFile, "\t [%lu] = \n", index);
-//             }
-//         }
-//     }
-
-//     else {
-//         for (size_t index = 0; index < stack->capacity; index++) {
-            
-//             if (index < stack->size) {
-//                 fprintf(outputFile, "\t*[%lu] = ", index);
-//                 fprintf(outputFile, "%" SPECIFICATOR_TYPE "\n", stack->data[index]);
-//             }
-
-//             else {
-//                 fprintf(outputFile, "\t [%lu] = \n", index);
-//             }
-//         }
-//     }
-
-//     fprintf(outputFile, "\t}\n}\n\n");
-
-//     fclose(outputFile);
-
-//     return 0;
-// }
-
 int stackDumpHtml(stack *stack) {
     FILE *outputFile = fopen(stack->dumpFile, "a");
     customWarning(outputFile != NULL, 1);
@@ -88,17 +27,17 @@ int stackDumpHtml(stack *stack) {
                         stack, stack->lastUseFileName, stack->lastUseLine, stack->lastUseFuncPrototype,
                         stack->bornFileName, stack->bornLine, stack->bornFuncPrototype);
     fprintf(outputFile, "\t{\n");
-    fprintf(outputFile, "\tLEFT_STACK_INFO_CANARY [%p] = %lu\n", &(stack->leftCanary), stack->leftCanary);
+    fprintf(outputFile, "\tLEFT_STACK_INFO_CANARY [%p] = %d\n", &(stack->leftCanary), stack->leftCanary);
     fprintf(outputFile,
     "\t<b>size</b>     = <b>%lu</b>\n"
     "\t<b>capacity</b> = <b>%lu</b>\n", stack->size, stack->capacity);
-    fprintf(outputFile, "\tRIGHT_STACK_INFO_CANARY [%p] = %lu\n", &(stack->rightCanary), stack->rightCanary);
+    fprintf(outputFile, "\tRIGHT_STACK_INFO_CANARY [%p] = %d\n", &(stack->rightCanary), stack->rightCanary);
     fprintf(outputFile,
     "\t<b>data</b><b><font color = 'DeepSkyBlue'>" "[%p]</font></b>:\n"
     "\t{\n",stack->data);
 
     if (stack->memoryChunk != NULL) {
-        fprintf(outputFile, "<b><font color = 'DeepPink'>\t" "LEFT_DATA_CANARY [%p]</b></font> = %lu\n", stack->memoryChunk, *(uint64_t *)(stack->memoryChunk));
+        fprintf(outputFile, "<b><font color = 'DeepPink'>\t" "LEFT_DATA_CANARY [%p]</b></font> = %d\n", stack->memoryChunk, *(stack_t *)(stack->memoryChunk));
     }
 
     if (stack->capacity > 50) {
@@ -148,7 +87,7 @@ int stackDumpHtml(stack *stack) {
     }
 
     if (stack->memoryChunk != NULL) {
-        fprintf(outputFile, "<b><font color = 'DeepPink'>\t" "RIGHT_DATA_CANARY [%p]</b></font> = %lu\n", (uint64_t *)stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY), *(uint64_t *)(stack->memoryChunk + stack->capacity + CANARY_SIZE(CANARY)));
+        fprintf(outputFile, "<b><font color = 'DeepPink'>\t" "RIGHT_DATA_CANARY [%p]</b></font> = %d\n", (stack_t *)stack->memoryChunk + stack->capacity + sizeof(CANARY), *(stack_t *)(stack->memoryChunk + stack->capacity + sizeof(CANARY)));
     }
 
     fprintf(outputFile, "\t}\n}\n\n");
