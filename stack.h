@@ -81,10 +81,12 @@ struct stack {
     int         lastUseLine;
     const char *lastUseFuncPrototype;
     char       *dumpFile;
+    uint32_t    stackErrorStatus;
     size_t      size;
     size_t      capacity;
     stack_t    *memoryChunk;
     stack_t    *data;
+    uint64_t    hash;
     CANARY_INITIALIZE(rightCanary);
 };
 
@@ -99,20 +101,28 @@ const size_t  COUNT_OF_CANARIES = 2;
 const size_t  CANARY_SHIFT      = 1;
 // TODO stackError functions
 // TODO check stackErrors
+
 enum stackError {
-    STACK_OVERFLOW     = 0,
-    STACK_UNDERFLOW    = 1,
-    STACK_BAD_POINTER  = 2,
-    STACK_BAD_CAPACITY = 3,
-    STACK_BAD_SIZE     = 4,
-    STACK_BAD_VALUE    = 5
+    STACK_NO_ERROR                = 0,
+    STACK_INITIALIZED             = 1 <<  0,
+    STACK_NOT_INITIALIZED         = 1 <<  1,
+    STACK_BAD_POINTER             = 1 <<  2,
+    STACK_OVERFLOW                = 1 <<  3,
+    STACK_UNDERFLOW               = 1 <<  4,
+    STACK_BAD_CAPACITY            = 1 <<  5,
+    STACK_BAD_SIZE                = 1 <<  6,
+    STACK_STRUCT_BAD_LEFT_CANARY  = 1 <<  7,
+    STACK_STRUCT_BAD_RIGHT_CANARY = 1 <<  8,
+    STACK_BAD_LEFT_CANARY         = 1 <<  9,
+    STACK_BAD_RIGHT_CANARY        = 1 << 10,
+    STACK_BAD_HASH                = 1 << 11
 };
 
 // FUNCTION PROTOTYPES //
-int        stackFillPoison        (stack *stack);
-static int stackResize            (stack *stack, const changeMemory changeMemoryMode);
-int        stackCheck             (stack *stack);
-int        printStack             (stack *stack);
+int        stackFillPoison (stack *stack);
+static int stackResize     (stack *stack, const changeMemory changeMemoryMode);
+int        stackCheck      (stack *stack);
+int        printStack      (stack *stack);
 // FUNCTION PROTOTYPES //
 
 #endif // STACK_H_
