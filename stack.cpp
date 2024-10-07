@@ -5,6 +5,7 @@
 #include "stackDump.h"
 #include "stack.h"
 #include "customWarning/customWarning.h"
+#include "stackHash.h"
 
 #define SPECIFICATOR_TYPE "d"
 
@@ -15,6 +16,8 @@
 // TODO ALL POINTERS TO NULL AFTER FREE!!!!!!
 // TODO UINT64_T IN 2 MEMORY CELLS FOR STACK_T (INT) || USE MEMORY CAST
 
+// TODO ANYWHERE HASH_CHECK
+
 int stackInitialize(stack *stack, size_t capacity) {
     customWarning(!stackCheck(stack), 1);
 
@@ -22,9 +25,10 @@ int stackInitialize(stack *stack, size_t capacity) {
     stack->capacity     = capacity;
     stack->memoryChunk  = (stack_t *)calloc(capacity + COUNT_OF_CANARIES, sizeof(stack_t));
     stack->data         = stack->memoryChunk + CANARY_SHIFT;
+    stack->hash         = hashValue;
 
     DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
-    DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, stack->capacity + CANARY_SHIFT); // TODO MAGIC 1 = CANARY SHIFT ON RIGHT SIDE
+    DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, stack->capacity + CANARY_SHIFT);
 
     customWarning(stack->data != NULL, 1);
 
@@ -77,11 +81,23 @@ int stackPush(stack *stack, stack_t value) {
     customWarning(!stackCheck(stack), 1);
     customWarning(value != POISON_VALUE, 1);
 
+    printf("CALL STACK_HASH IN STACK_PUSH: %lu\n", djb2Hash(stack));
+
+    printf("BEFORE IN STACK_PUSH: %lu\n", stack->hash);
+
+    customWarning(!djb2HashCheck(stack), 1);
+
     if (stack->size >= stack->capacity) {
         stackResize(stack, ADD_MEMORY);
     }
 
     stack->data[stack->size++] = value;
+
+    stack->hash = djb2Hash(stack);
+
+    printf("AFTER IN STACK_PUSH: %lu\n", stack->hash);
+
+    customWarning(!djb2HashCheck(stack), 1);
 
     DUMP_(stack);
 
@@ -96,12 +112,24 @@ int stackPop(stack *stack, stack_t *variable) {
     customWarning(stack->size >  0,    1);
     customWarning(variable    != NULL, 1);
 
+    printf("CALL STACK_HASH IN STACK_POP: %lu\n", djb2Hash(stack));
+
+    printf("BEFORE IN STACK_POP: %lu\n", stack->hash);
+
+    customWarning(!djb2HashCheck(stack), 1);
+
     if (stack->size <= stack->capacity / 4) {
         stackResize(stack, DUMP_MEMORY);
     }
 
     *variable                = stack->data[--stack->size];
     stack->data[stack->size] = POISON_VALUE;
+
+    stack->hash = djb2Hash(stack);
+
+    printf("AFTER IN STACK_POP: %lu\n", stack->hash);
+
+    customWarning(!djb2HashCheck(stack), 1);
 
     DUMP_(stack);
 
@@ -118,7 +146,7 @@ static int stackResize(stack *stack, const changeMemory changeMemoryMode) {
 
     if (changeMemoryMode == ADD_MEMORY) {
         size_t newCapacity = stack->capacity * 2;
-
+        
         stack->memoryChunk = (stack_t *)realloc(stack->memoryChunk,
                                                 sizeof(stack_t) * (newCapacity + COUNT_OF_CANARIES));
 
