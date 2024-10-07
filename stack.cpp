@@ -20,11 +20,11 @@ int stackInitialize(stack *stack, size_t capacity) {
 
     stack->size         = 0;
     stack->capacity     = capacity;
-    stack->memoryChunk  = (stack_t *)calloc(capacity + 2, sizeof(stack_t)); // TODO MAGIC 2 = COUNT OF CANARIES
-    stack->data         = stack->memoryChunk + 1; // TODO MAGIC 1 = CANARY SHIFT ON LEFT SIDE
+    stack->memoryChunk  = (stack_t *)calloc(capacity + COUNT_OF_CANARIES, sizeof(stack_t));
+    stack->data         = stack->memoryChunk + CANARY_SHIFT;
 
     DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
-    DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, stack->capacity + 1); // TODO MAGIC 1 = CANARY SHIFT ON RIGHT SIDE
+    DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, stack->capacity + CANARY_SHIFT); // TODO MAGIC 1 = CANARY SHIFT ON RIGHT SIDE
 
     customWarning(stack->data != NULL, 1);
 
@@ -120,14 +120,14 @@ static int stackResize(stack *stack, const changeMemory changeMemoryMode) {
         size_t newCapacity = stack->capacity * 2;
 
         stack->memoryChunk = (stack_t *)realloc(stack->memoryChunk,
-                                                sizeof(stack_t) * (newCapacity + 2)); // TODO
+                                                sizeof(stack_t) * (newCapacity + COUNT_OF_CANARIES));
 
         customWarning(stack->memoryChunk != NULL, 1);
 
         DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
-        DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, newCapacity + 1); // TODO
+        DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, newCapacity + CANARY_SHIFT);
 
-        stack->data         = stack->memoryChunk + 1; // TODO
+        stack->data         = stack->memoryChunk + CANARY_SHIFT;
         stack->capacity    *= 2;
 
         stackFillPoison(stack); // TODO customRealloc (realloc + fill)
@@ -137,14 +137,14 @@ static int stackResize(stack *stack, const changeMemory changeMemoryMode) {
         size_t newCapacity = stack->capacity / 2;
 
         stack->memoryChunk = (stack_t *)realloc(stack->memoryChunk,
-                                         sizeof(stack_t) * (newCapacity + 2)); // TODO
+                                         sizeof(stack_t) * (newCapacity + COUNT_OF_CANARIES));
 
         customWarning(stack->memoryChunk != NULL, 1);
 
         DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
-        DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, newCapacity + 1); // TODO
+        DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, newCapacity + CANARY_SHIFT);
 
-        stack->data         = stack->memoryChunk + 1; // TODO
+        stack->data         = stack->memoryChunk + CANARY_SHIFT;
         stack->capacity    /= 2;
 
         stackFillPoison(stack); // TODO customRealloc (realloc + fill)
@@ -157,6 +157,7 @@ static int stackResize(stack *stack, const changeMemory changeMemoryMode) {
     return 0;
 }
 
+// TODO MORE CHECKERS
 int stackCheck(stack *stack) {
     customWarning(stack              != NULL,            1);
     // customWarning(stack->memoryChunk != NULL,            1);

@@ -93,10 +93,10 @@ enum changeMemory {
     ADD_MEMORY  = 1
 };
 
-const size_t  NAME_BUFFER_SIZE = 40;
-
-const stack_t POISON_VALUE     = -666; // TODO CHANGE IN DEPENDENCE OF STACK_T TYPE
-
+const size_t  NAME_BUFFER_SIZE  = 40;
+const stack_t POISON_VALUE      = -666;
+const size_t  COUNT_OF_CANARIES = 2;
+const size_t  CANARY_SHIFT      = 1;
 // TODO stackError functions
 // TODO check stackErrors
 enum stackError {
