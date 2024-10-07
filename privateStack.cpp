@@ -29,8 +29,10 @@ stack *initializePrivateStack(const char *fileName, int line, const char *functi
 int destructPrivateStack(stack *stack) {
     customWarning(stack != NULL, 1);
 
+    stackDestruct(stack);
+
     free(stack->dumpFile);
-    free(stack->memoryChunk);
+    free(stack->memoryChunk); // ! WHY IT IS NOT ERROR???????????????????????????????????
     free(stack);
 
     return 0;
