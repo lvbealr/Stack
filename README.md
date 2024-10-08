@@ -62,7 +62,7 @@ The program will start in manual mode and ask you to enter data for correct oper
 
 ## 🗎 Documentation <a name = "documentation"></a>
 
-For convenient use of the program, [Doxygen documentation](vk.com/lvbealr) is included with the project.
+For convenient use of the program, [Doxygen documentation](https://vk.com/lvbealr) is included with the project.
 
 ## 🔧 Stack Dump <a name = "dump"></a>
 
