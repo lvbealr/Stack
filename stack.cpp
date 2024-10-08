@@ -10,13 +10,8 @@
 
 #define SPECIFICATOR_TYPE "d"
 
-// TODO WHAT BREAK BY WARNING
-// TODO WHAT BREAK BY ASSERT 
-// TODO SOLVE THIS
-
 static stackError stackResize(stack *stack, const changeMemory changeMemoryMode);
 
-// TODO DEFINE IT!!!
 ///////////////////////////////////////////////////////////
 // stackError errorCode = stackCheck(stack);             //
 // customWarning(errorCode == STACK_NO_ERROR, errorCode);//

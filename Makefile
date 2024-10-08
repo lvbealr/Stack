@@ -31,6 +31,7 @@ all : $(TARGET)
 
 $(TARGET) : $(BUILD_DIR) $(OBJECT)
 	$(CXX) $(BUILD_OBJ) -o $(TARGET)
+	xcowsay "myStack COMPILED!"
 
 $(BUILD_DIR) :
 	mkdir -p build

@@ -67,8 +67,6 @@ const stack_t CANARY = 5051;
 
 #endif // NDEBUG
 
-// TODO INFO STACK STRUCT
-
 struct stack {
     CANARY_INITIALIZE(leftCanary);
     const char *bornFileName;

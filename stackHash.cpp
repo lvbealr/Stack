@@ -5,8 +5,6 @@
 #include "stack.h"
 #include "customExits.h"
 
-// TODO HASH INTO DUMP
-
 #ifndef _NDEBUG
 
 uint64_t djb2Hash(stack *STACK) {
