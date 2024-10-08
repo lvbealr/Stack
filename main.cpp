@@ -7,51 +7,25 @@
 #include "privateStack.h"
 
 int main() {
-    stack *Stack = initializePrivateStack(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+    stack *stack = createPrivateStack();
+    initializePrivateStack(stack, __FILE__, __LINE__, __PRETTY_FUNCTION__);
 
     //////////////////////////////////////////////////////////
     for (int testIndex = 0; testIndex < 25; testIndex++) {  //
-        stackPush(Stack, testIndex);                        //
+        stackPush(stack, testIndex);                        //
     }                                                       //
                                                             //
                                                             //
     stack_t x = 0;                                          //
                                                             //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
-    stackPop(Stack, &x);                                    //
+    for (size_t index = 0; index < 30; index++) {           //
+        stackPop(stack, &x);                                //
+    }                                                       //
                                                             //
-    stackPush(Stack, 999);                                  //
+    stackPush(stack, 999);                                  //
     //////////////////////////////////////////////////////////
 
-    destructPrivateStack(Stack);
+    destructPrivateStack(stack);
 
     return 0;
 }
