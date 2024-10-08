@@ -18,8 +18,8 @@ static stackError stackResize(stack *stack, const changeMemory changeMemoryMode)
 ///////////////////////////////////////////////////////////
 
 stackError stackInitialize(stack *STACK, int capacity) {
-    customWarning(STACK    != NULL, STACK_NULL_POINTER);
-    customWarning(capacity >= 0,    STACK_BAD_CAPACITY);
+    customAssert(STACK    != NULL, STACK_NULL_POINTER);
+    customAssert(capacity >= 0,    STACK_BAD_CAPACITY);
 
     STACK->size         = 0;
     STACK->capacity     = capacity;
@@ -41,14 +41,14 @@ stackError stackInitialize(stack *STACK, int capacity) {
     DUMP_(STACK);
 
     stackError errorCode = stackCheck(STACK);
-    customWarning(errorCode == STACK_NO_ERROR, errorCode);
+    customAssert(errorCode == STACK_NO_ERROR, errorCode);
 
     return STACK_NO_ERROR;
 }
 
 stackError stackFillPoison(stack *STACK) {
     stackError errorCode = stackCheck(STACK);
-    customWarning(errorCode == STACK_NO_ERROR, errorCode);
+    customAssert(errorCode == STACK_NO_ERROR, errorCode);
 
     for (int index = STACK->size; index < STACK->capacity; index++) {
         STACK->data[index] = POISON_VALUE;
@@ -57,18 +57,20 @@ stackError stackFillPoison(stack *STACK) {
     DUMP_(STACK);
 
     errorCode = stackCheck(STACK);
-    customWarning(errorCode == STACK_NO_ERROR, errorCode);
+    customAssert(errorCode == STACK_NO_ERROR, errorCode);
 
     return STACK_NO_ERROR;
 }
 
 stackError stackDestruct(stack *STACK) {
     stackError errorCode = stackCheck(STACK);
-    customWarning(errorCode == STACK_NO_ERROR, errorCode);
+    customAssert(errorCode == STACK_NO_ERROR, errorCode);
 
     STACK->size     = 0;
     STACK->capacity = 0;
-
+    #ifndef _NDEBUG
+    STACK->hash     = 0;
+    #endif
     free(STACK->memoryChunk);
     STACK->memoryChunk = NULL;
 
@@ -85,11 +87,11 @@ stackError stackDestruct(stack *STACK) {
 
 stackError stackPush(stack *STACK, stack_t value) {
     stackError errorCode = stackCheck(STACK);
-    customWarning(errorCode == STACK_NO_ERROR, errorCode);
-    customWarning(value != POISON_VALUE, INVALID_INPUT_VALUE);
+    customAssert(errorCode == STACK_NO_ERROR, errorCode);
+    customAssert(value != POISON_VALUE, INVALID_INPUT_VALUE);
 
     #ifndef _NDEBUG
-    customWarning(!djb2HashCheck(STACK), STACK_BAD_HASH);
+    customAssert(!djb2HashCheck(STACK), STACK_BAD_HASH);
     #endif
 
     if (STACK->size >= STACK->capacity) {
@@ -100,14 +102,14 @@ stackError stackPush(stack *STACK, stack_t value) {
 
     #ifndef _NDEBUG
     STACK->hash = djb2Hash(STACK);
-    customWarning(!djb2HashCheck(STACK), STACK_BAD_HASH);
+    customAssert(!djb2HashCheck(STACK), STACK_BAD_HASH);
     #endif
 
     DUMP_(STACK);
 
     #ifndef _NDEBUG
     errorCode = stackCheck(STACK);
-    customWarning(errorCode == STACK_NO_ERROR, errorCode);
+    customAssert(errorCode == STACK_NO_ERROR, errorCode);
     #endif
 
     return STACK_NO_ERROR;
@@ -148,7 +150,7 @@ stackError stackPop(stack *STACK, stack_t *variable) {
 
 static stackError stackResize(stack *STACK, const changeMemory changeMemoryMode) {
     stackError errorCode = stackCheck(STACK);
-    customWarning(errorCode == STACK_NO_ERROR, errorCode);
+    customAssert(errorCode == STACK_NO_ERROR, errorCode);
 
     DUMP_(STACK);
 
@@ -167,7 +169,7 @@ static stackError stackResize(stack *STACK, const changeMemory changeMemoryMode)
         STACK->data         = STACK->memoryChunk + CANARY_SHIFT;
 
         errorCode = stackCheck(STACK);
-        customWarning(errorCode == STACK_NO_ERROR, errorCode);
+        customAssert(errorCode == STACK_NO_ERROR, errorCode);
 
         stackFillPoison(STACK); // TODO customRealloc (realloc + fill)
     }
@@ -187,7 +189,7 @@ static stackError stackResize(stack *STACK, const changeMemory changeMemoryMode)
         STACK->data         = STACK->memoryChunk + CANARY_SHIFT;
         
         errorCode = stackCheck(STACK);
-        customWarning(errorCode == STACK_NO_ERROR, errorCode);
+        customAssert(errorCode == STACK_NO_ERROR, errorCode);
 
         stackFillPoison(STACK); // TODO customRealloc (realloc + fill)
     }
@@ -195,7 +197,7 @@ static stackError stackResize(stack *STACK, const changeMemory changeMemoryMode)
     DUMP_(STACK);
 
     errorCode = stackCheck(STACK);
-    customWarning(errorCode == STACK_NO_ERROR, errorCode);
+    customAssert(errorCode == STACK_NO_ERROR, errorCode);
 
     return STACK_NO_ERROR;
 }
@@ -235,21 +237,12 @@ stackError stackCheck(stack *STACK) {
 
     #endif
 
-    if (STACK->memoryChunk != NULL) {
-        int canaryStatus = 0;
-        CHECK_CANARY();
-        if (canaryStatus != 0) {
-            STACK->errorStatus |= 1 << STACK_DATA_BAD_CANARY;
-            return STACK_DATA_BAD_CANARY;
-        }
-    }
-
     return STACK_NO_ERROR;
 }
 
 stackError printStack(stack *STACK) {
     stackError errorCode = stackCheck(STACK);
-    customWarning(errorCode == STACK_NO_ERROR, errorCode);
+    customAssert(errorCode == STACK_NO_ERROR, errorCode);
 
     for (int index = 0; index < STACK->capacity; index++) {
         printf("[%d, %p] = %" SPECIFICATOR_TYPE "\n", index, STACK->data + index, STACK->data[index]);

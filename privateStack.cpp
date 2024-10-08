@@ -55,6 +55,7 @@ stackError destructPrivateStack(stack *STACK) {
     printBinaryErrorStatus(STACK->errorStatus);
 
     STACK->errorStatus = 0;
+
     free(STACK);
 
     return STACK_NO_ERROR;

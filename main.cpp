@@ -4,6 +4,7 @@
 #include <ctime>
 
 #include "customExits.h"
+#include "stack.h"
 #include "privateStack.h"
 
 int main() {

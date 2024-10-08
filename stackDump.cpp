@@ -103,8 +103,9 @@ int stackDumpHtml(stack *stack) {
                          *(stack->memoryChunk + stack->capacity + 1));
     }
 
+    #ifndef _NDEBUG
     fprintf(outputFile, "\t<b><font color = 'Maroon'>STACK_HASH_VALUE = </font>%lu</b>\n", stack->hash);
-
+    #endif
     fprintf(outputFile, "\t}\n}\n\n");
 
     fprintf(outputFile, "%s", endHtml);

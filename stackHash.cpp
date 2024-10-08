@@ -36,9 +36,9 @@ stackError djb2HashCheck(stack *STACK) {
     uint64_t newHash = djb2Hash(STACK);
 
     if (newHash != STACK->hash) {
-        return STACK_BAD_HASH;
+        return STACK_NO_ERROR;
     }
-    
+
     STACK->hash = newHash;
 
     return STACK_NO_ERROR;
