@@ -5,18 +5,25 @@
 #include "stack.h"
 #include "customWarning/customWarning.h"
 
-uint64_t djb2Hash(stack *stack) {
-    customWarning(stack != NULL, 1); // TODO check
+// TODO HASH INTO DUMP
+
+#ifndef _NDEBUG
+
+uint64_t djb2Hash(stack *STACK) {
+    if (STACK == NULL) {
+        exit(0);
+    }
 
     uint64_t hash = hashValue;
     uint64_t code = 0;
-    for (size_t index = 0; index < stack->size; index++) {
+
+    for (int index = 0; index < STACK->size; index++) {
         if (index == 0) {
-            code = stack->data[index];
+            code = (uint64_t)STACK->data[index];
         }
         
         else {
-            code ^= stack->data[index];
+            code ^= (uint64_t)STACK->data[index];
         }
         
         hash = ((hash << 5) + hash) + code;
@@ -25,15 +32,18 @@ uint64_t djb2Hash(stack *stack) {
     return hash;
 }
 
-int djb2HashCheck(stack *stack) {
-    customWarning(stack != NULL, 1); // TODO check
+stackError djb2HashCheck(stack *STACK) {
+    customAssert(STACK != NULL, STACK_NULL_POINTER);
     
-    uint64_t newHash = djb2Hash(stack);
+    uint64_t newHash = djb2Hash(STACK);
 
-    if (newHash != stack->hash) {
-        return 1; // TODO return value
+    if (newHash != STACK->hash) {
+        return STACK_BAD_HASH;
     }
     
-    stack->hash = newHash;
-    return 0;
+    STACK->hash = newHash;
+    
+    return STACK_NO_ERROR;
 }
+
+#endif

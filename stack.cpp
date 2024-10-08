@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "stackDump.h"
+#include "privateStack.h"
 #include "stack.h"
 #include "customWarning/customWarning.h"
 #include "stackHash.h"
@@ -13,197 +14,273 @@
 // TODO WHAT BREAK BY ASSERT 
 // TODO SOLVE THIS
 
-// TODO ALL POINTERS TO NULL AFTER FREE!!!!!!
-// TODO UINT64_T IN 2 MEMORY CELLS FOR STACK_T (INT) || USE MEMORY CAST
+static stackError stackResize(stack *stack, const changeMemory changeMemoryMode);
 
-// TODO ANYWHERE HASH_CHECK
+// TODO DEFINE IT!!!
+///////////////////////////////////////////////////////////
+// stackError errorCode = stackCheck(stack);             //
+// customWarning(errorCode == STACK_NO_ERROR, errorCode);//
+///////////////////////////////////////////////////////////
 
-int stackInitialize(stack *stack, size_t capacity) {
-    customWarning(!stackCheck(stack), 1);
+stackError stackInitialize(stack *STACK, int capacity) {
+    customWarning(STACK    != NULL, STACK_NULL_POINTER);
+    customWarning(capacity >= 0,    STACK_BAD_CAPACITY);
 
-    stack->size         = 0;
-    stack->capacity     = capacity;
-    stack->memoryChunk  = (stack_t *)calloc(capacity + COUNT_OF_CANARIES, sizeof(stack_t));
-    stack->data         = stack->memoryChunk + CANARY_SHIFT;
-    stack->hash         = hashValue;
+    STACK->size         = 0;
+    STACK->capacity     = capacity;
+    STACK->memoryChunk  = (stack_t *)calloc((size_t)capacity + COUNT_OF_CANARIES, sizeof(stack_t));
+    customAssert(STACK->memoryChunk != NULL, STACK_DATA_NULL_POINTER);
+    
+    STACK->data         = STACK->memoryChunk + CANARY_SHIFT;
+    #ifndef _NDEBUG
+    STACK->hash         = hashValue;
+    #endif
 
-    DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
-    DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, stack->capacity + CANARY_SHIFT);
+    DATA_BEGIN_CANARY_INITIALIZE(STACK->memoryChunk);
+    DATA_END_CANARY_INITIALIZE  (STACK->memoryChunk, STACK->capacity + CANARY_SHIFT);
 
-    customWarning(stack->data != NULL, 1);
+    customWarning(STACK->data != NULL, STACK_DATA_NULL_POINTER); // TODO or customAssert?
 
-    stackFillPoison(stack);
+    stackFillPoison(STACK);
 
-    DUMP_(stack);
+    DUMP_(STACK);
 
-    customWarning(!stackCheck(stack), 1);
+    stackError errorCode = stackCheck(STACK);
+    customWarning(errorCode == STACK_NO_ERROR, errorCode);
 
-    return 0;
+    return STACK_NO_ERROR;
 }
 
-int stackFillPoison(stack *stack) {
-    customWarning(!stackCheck(stack), 1);
+stackError stackFillPoison(stack *STACK) {
+    stackError errorCode = stackCheck(STACK);
+    customWarning(errorCode == STACK_NO_ERROR, errorCode);
 
-    for (size_t index = stack->size; index < stack->capacity; index++) {
-        stack->data[index] = POISON_VALUE;
+    for (int index = STACK->size; index < STACK->capacity; index++) {
+        STACK->data[index] = POISON_VALUE;
     }
 
-    DUMP_(stack);
+    DUMP_(STACK);
 
-    customWarning(!stackCheck(stack), 1);
+    errorCode = stackCheck(STACK);
+    customWarning(errorCode == STACK_NO_ERROR, errorCode);
 
-    return 0;
+    return STACK_NO_ERROR;
 }
 
-int stackDestruct(stack *stack) {
-    customWarning(!stackCheck(stack), 1);
+stackError stackDestruct(stack *STACK) {
+    stackError errorCode = stackCheck(STACK);
+    customWarning(errorCode == STACK_NO_ERROR, errorCode);
 
-    stack->size     = 0;
-    stack->capacity = 0;
+    STACK->size     = 0;
+    STACK->capacity = 0;
 
-    free(stack->memoryChunk);
-    stack->memoryChunk = NULL;
+    free(STACK->memoryChunk);
+    STACK->memoryChunk = NULL;
 
     CANARY_DESTRUCT();
 
-    DUMP_(stack);
+    DUMP_(STACK);
 
-    free(stack->dumpFile);
-    stack->dumpFile = NULL;
+    free(STACK->dumpFile);
+    STACK->dumpFile = NULL;
 
-    customWarning(!stackCheck(stack), 1);
-
-    return 0;
+    return STACK_NO_ERROR;
 }
 
 
-int stackPush(stack *stack, stack_t value) {
-    customWarning(!stackCheck(stack), 1);
-    customWarning(value != POISON_VALUE, 1);
+stackError stackPush(stack *STACK, stack_t value) {
+    stackError errorCode = stackCheck(STACK);
+    customWarning(errorCode == STACK_NO_ERROR, errorCode);
+    customWarning(value != POISON_VALUE, INVALID_INPUT_VALUE);
 
-    printf("CALL STACK_HASH IN STACK_PUSH: %lu\n", djb2Hash(stack));
+    #ifndef _NDEBUG
+    printf("CALL STACK_HASH IN STACK_PUSH: %lu\n", djb2Hash(STACK));
 
-    printf("BEFORE IN STACK_PUSH: %lu\n", stack->hash);
+    printf("BEFORE IN STACK_PUSH: %lu\n", STACK->hash);
 
-    customWarning(!djb2HashCheck(stack), 1);
+    customWarning(!djb2HashCheck(STACK), STACK_BAD_HASH);
+    #endif
 
-    if (stack->size >= stack->capacity) {
-        stackResize(stack, ADD_MEMORY);
+    if (STACK->size >= STACK->capacity) {
+        stackResize(STACK, ADD_MEMORY);
     }
 
-    stack->data[stack->size++] = value;
+    STACK->data[STACK->size++] = value;
 
-    stack->hash = djb2Hash(stack);
+    #ifndef _NDEBUG
+    STACK->hash = djb2Hash(STACK);
 
-    printf("AFTER IN STACK_PUSH: %lu\n", stack->hash);
+    printf("AFTER IN STACK_PUSH: %lu\n", STACK->hash);
 
-    customWarning(!djb2HashCheck(stack), 1);
+    customWarning(!djb2HashCheck(STACK), STACK_BAD_HASH);
+    #endif
 
-    DUMP_(stack);
+    DUMP_(STACK);
 
-    customWarning(!stackCheck(stack), 1);
+    #ifndef _NDEBUG
+    errorCode = stackCheck(STACK);
+    customWarning(errorCode == STACK_NO_ERROR, errorCode);
+    #endif
 
-    return 0;
+    return STACK_NO_ERROR;
 }
 
 
-int stackPop(stack *stack, stack_t *variable) {
-    customWarning(!stackCheck(stack),  1);
-    customWarning(stack->size >  0,    1);
-    customWarning(variable    != NULL, 1);
+stackError stackPop(stack *STACK, stack_t *variable) {
+    stackError errorCode = stackCheck(STACK);
+    customWarning(errorCode == STACK_NO_ERROR, errorCode);
 
-    printf("CALL STACK_HASH IN STACK_POP: %lu\n", djb2Hash(stack));
+    customWarning(STACK->size >  0,    STACK_BAD_SIZE);
+    customWarning(variable    != NULL, POP_VARIABLE_NULL_POINTER);
 
-    printf("BEFORE IN STACK_POP: %lu\n", stack->hash);
+    #ifndef _NDEBUG
+    printf("CALL STACK_HASH IN STACK_POP: %lu\n", djb2Hash(STACK));
 
-    customWarning(!djb2HashCheck(stack), 1);
+    printf("BEFORE IN STACK_POP: %lu\n", STACK->hash);
 
-    if (stack->size <= stack->capacity / 4) {
-        stackResize(stack, DUMP_MEMORY);
+    customWarning(!djb2HashCheck(STACK), STACK_BAD_HASH);
+    #endif
+
+    if (STACK->size <= STACK->capacity / 4) {
+        stackResize(STACK, DUMP_MEMORY);
     }
 
-    *variable                = stack->data[--stack->size];
-    stack->data[stack->size] = POISON_VALUE;
+    *variable                = STACK->data[--STACK->size];
+    STACK->data[STACK->size] = POISON_VALUE;
 
-    stack->hash = djb2Hash(stack);
+    #ifndef _NDEBUG
+    STACK->hash = djb2Hash(STACK);
 
-    printf("AFTER IN STACK_POP: %lu\n", stack->hash);
+    printf("AFTER IN STACK_POP: %lu\n", STACK->hash);
 
-    customWarning(!djb2HashCheck(stack), 1);
+    customWarning(!djb2HashCheck(STACK), STACK_BAD_HASH);
+    #endif
 
-    DUMP_(stack);
+    DUMP_(STACK);
 
-    customWarning(!stackCheck(stack),  1);
+    errorCode = stackCheck(STACK);
+    customWarning(errorCode == STACK_NO_ERROR, errorCode);
 
-    return 0;
+    return STACK_NO_ERROR;
     
 }
 
-static int stackResize(stack *stack, const changeMemory changeMemoryMode) {
-    customWarning(!stackCheck(stack), 1);
+static stackError stackResize(stack *STACK, const changeMemory changeMemoryMode) {
+    stackError errorCode = stackCheck(STACK);
+    customWarning(errorCode == STACK_NO_ERROR, errorCode);
 
-    DUMP_(stack);
+    DUMP_(STACK);
 
     if (changeMemoryMode == ADD_MEMORY) {
-        size_t newCapacity = stack->capacity * 2;
+        int newCapacity    = STACK->capacity * 2;
         
-        stack->memoryChunk = (stack_t *)realloc(stack->memoryChunk,
-                                                sizeof(stack_t) * (newCapacity + COUNT_OF_CANARIES));
+        STACK->memoryChunk = (stack_t *)realloc(STACK->memoryChunk,
+                                                sizeof(stack_t) * ((size_t)newCapacity + COUNT_OF_CANARIES));
 
-        customWarning(stack->memoryChunk != NULL, 1);
+        customAssert(STACK->memoryChunk != NULL, STACK_DATA_NULL_POINTER);
 
-        DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
-        DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, newCapacity + CANARY_SHIFT);
+        DATA_BEGIN_CANARY_INITIALIZE(STACK->memoryChunk);
+        DATA_END_CANARY_INITIALIZE  (STACK->memoryChunk, newCapacity + CANARY_SHIFT);
 
-        stack->data         = stack->memoryChunk + CANARY_SHIFT;
-        stack->capacity    *= 2;
+        // TODO CHECK CANARIES
 
-        stackFillPoison(stack); // TODO customRealloc (realloc + fill)
+        STACK->data         = STACK->memoryChunk + CANARY_SHIFT;
+        STACK->capacity    *= 2;
+
+        stackFillPoison(STACK); // TODO customRealloc (realloc + fill)
     }
 
     else if (changeMemoryMode == DUMP_MEMORY) {
-        size_t newCapacity = stack->capacity / 2;
+        int newCapacity    = STACK->capacity / 2;
 
-        stack->memoryChunk = (stack_t *)realloc(stack->memoryChunk,
-                                         sizeof(stack_t) * (newCapacity + COUNT_OF_CANARIES));
+        STACK->memoryChunk = (stack_t *)realloc(STACK->memoryChunk,
+                                         sizeof(stack_t) * ((size_t)newCapacity + COUNT_OF_CANARIES));
 
-        customWarning(stack->memoryChunk != NULL, 1);
+        customAssert(STACK->memoryChunk != NULL, STACK_DATA_NULL_POINTER);
 
-        DATA_BEGIN_CANARY_INITIALIZE(stack->memoryChunk);
-        DATA_END_CANARY_INITIALIZE  (stack->memoryChunk, newCapacity + CANARY_SHIFT);
+        // TODO
 
-        stack->data         = stack->memoryChunk + CANARY_SHIFT;
-        stack->capacity    /= 2;
+        DATA_BEGIN_CANARY_INITIALIZE(STACK->memoryChunk);
+        DATA_END_CANARY_INITIALIZE  (STACK->memoryChunk, newCapacity + CANARY_SHIFT);
 
-        stackFillPoison(stack); // TODO customRealloc (realloc + fill)
+        STACK->data         = STACK->memoryChunk + CANARY_SHIFT;
+        STACK->capacity    /= 2;
+
+        stackFillPoison(STACK); // TODO customRealloc (realloc + fill)
     }
 
-    DUMP_(stack);
+    DUMP_(STACK);
 
-    customWarning(!stackCheck(stack), 1);
+    errorCode = stackCheck(STACK);
+    customWarning(errorCode == STACK_NO_ERROR, errorCode);
 
-    return 0;
+    return STACK_NO_ERROR;
 }
 
-// TODO MORE CHECKERS
-int stackCheck(stack *stack) {
-    customWarning(stack              != NULL,            1);
-    // customWarning(stack->memoryChunk != NULL,            1);
+// TODO DEFINE errorStatus += and return
 
-    if (stack->memoryChunk != NULL) {
+stackError stackCheck(stack *STACK) {
+    if (STACK == NULL) {
+        STACK->errorStatus |= 1 << STACK_NULL_POINTER;
+        return STACK_NULL_POINTER;
+    }
+
+    if (STACK->memoryChunk == NULL) {
+        STACK->errorStatus |= 1 << STACK_DATA_NULL_POINTER;
+        return STACK_DATA_NULL_POINTER;
+    }
+
+    if (STACK->size > STACK->capacity) {
+        STACK->errorStatus |= 1 << STACK_OVERFLOW;
+        return STACK_OVERFLOW;
+    }
+
+    if (STACK->size < 0) {
+        STACK->errorStatus |= 1 << STACK_ANTI_OVERFLOW;
+        return STACK_ANTI_OVERFLOW;
+    }
+
+    if (STACK->capacity < 0) {
+        STACK->errorStatus |= 1 << STACK_BAD_CAPACITY;
+        return STACK_BAD_CAPACITY;
+    }
+
+    #ifndef _NDEBUG
+
+    if (STACK->leftCanary != CANARY || STACK->rightCanary != CANARY) {
+        STACK->errorStatus |= 1 << STACK_STRUCT_BAD_CANARY;
+        return STACK_STRUCT_BAD_CANARY;
+    }
+
+    #endif
+
+    if (STACK->memoryChunk != NULL) {
+        int canaryStatus = 0;
         CHECK_CANARY();
+        if (canaryStatus != 0) {
+            STACK->errorStatus |= 1 << STACK_DATA_BAD_CANARY;
+            return STACK_DATA_BAD_CANARY;
+        }
     }
-    customWarning(stack->size        <= stack->capacity, 1);
 
-    return 0;
+    return STACK_NO_ERROR;
 }
 
-int printStack(stack *stack) {
-    customWarning(!stackCheck(stack), 1);
+stackError printStack(stack *STACK) {
+    stackError errorCode = stackCheck(STACK);
+    customWarning(errorCode == STACK_NO_ERROR, errorCode);
 
-    for (size_t index = 0; index < stack->capacity; index++) {
-        printf("[%lu, %p] = %" SPECIFICATOR_TYPE "\n", index, stack->data + index, stack->data[index]);
+    for (int index = 0; index < STACK->capacity; index++) {
+        printf("[%d, %p] = %" SPECIFICATOR_TYPE "\n", index, STACK->data + index, STACK->data[index]);
     }
 
-    return 0;
+    return STACK_NO_ERROR;
+}
+
+void printBinaryErrorStatus(int errorBinaryCode) {
+    if (errorBinaryCode > 1) {
+            printBinaryErrorStatus(errorBinaryCode >> 1);
+        }
+
+    printf("%d", errorBinaryCode % 2);
 }
