@@ -3,7 +3,7 @@
 #include <cstring>
 #include <ctime>
 
-#include "customWarning/customWarning.h"
+#include "customExits.h"
 #include "privateStack.h"
 
 int main() {

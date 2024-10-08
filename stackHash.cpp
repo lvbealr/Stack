@@ -3,7 +3,7 @@
 
 #include "stackHash.h"
 #include "stack.h"
-#include "customWarning/customWarning.h"
+#include "customExits.h"
 
 // TODO HASH INTO DUMP
 
@@ -42,7 +42,7 @@ stackError djb2HashCheck(stack *STACK) {
     }
     
     STACK->hash = newHash;
-    
+
     return STACK_NO_ERROR;
 }
 

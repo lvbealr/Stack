@@ -1,15 +1,17 @@
 #include <ctime>
 #include <cstdlib>
 #include <cstring>
+#include <cassert>
 
 #include "privateStack.h"
-#include "customWarning/customWarning.h"
+#include "customExits.h"
 #include "stack.h"
 
 stack *createPrivateStack() {
     stack *STACK = (stack *)calloc(1, sizeof(stack));
+
     if (STACK == NULL) {
-        exit(0);
+        assert("STACK POINTER IS NULL" && 0);
     }
 
     return STACK;
@@ -34,6 +36,9 @@ stackError initializePrivateStack(stack *STACK, const char *fileName, int line, 
 
     DATA_BEGIN_CANARY_INITIALIZE(STACK->memoryChunk);
     DATA_END_CANARY_INITIALIZE  (STACK->memoryChunk, STACK->capacity + 1);
+
+    stackError errorCode = stackCheck(STACK);
+    customWarning(errorCode == STACK_NO_ERROR, errorCode);
 
     return STACK_NO_ERROR;
 }
@@ -68,6 +73,7 @@ stackError setDumpFileName(stack *STACK) {
     const char *folderName = "dumps/";
     size_t systemCmdLength = strlen("mkdir ") + strlen(folderName) + 1;
     char *systemCmdBuffer  = (char *)calloc(systemCmdLength, sizeof(char));
+    customWarning(systemCmdBuffer != NULL, CMD_BUFFER_NULL_POINTER);
     strcpy(systemCmdBuffer, "mkdir ");
     const char *systemCmd  = strcat(systemCmdBuffer, folderName);
 

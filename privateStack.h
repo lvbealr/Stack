@@ -22,7 +22,8 @@ enum stackError {
     INVALID_INPUT_VALUE           =  9,
     STACK_BAD_SIZE                = 10,
     POP_VARIABLE_NULL_POINTER     = 11,
-    DUMP_FILE_NAME_NULL_POINTER   = 12
+    DUMP_FILE_NAME_NULL_POINTER   = 12,
+    CMD_BUFFER_NULL_POINTER       = 13
 };
 
 // FUNCTION PROTOTYPES //
