@@ -2,7 +2,7 @@
 #include <cstdint>
 
 #include "stackDump.h"
-#include "customWarning/customWarning.h"
+#include "customExits.h"
 
 const char *startHtml = R"(<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport"
                            content="width=device-width, initial-scale=1.0"><title>Document</title></head><body bgcolor = 'Beige'>)";
@@ -102,6 +102,8 @@ int stackDumpHtml(stack *stack) {
                 (stack_t *)stack->memoryChunk + stack->capacity + 1,
                          *(stack->memoryChunk + stack->capacity + 1));
     }
+
+    fprintf(outputFile, "\t<b><font color = 'Maroon'>STACK_HASH_VALUE = </font>%lu</b>\n", stack->hash);
 
     fprintf(outputFile, "\t}\n}\n\n");
 
