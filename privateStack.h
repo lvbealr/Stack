@@ -3,22 +3,37 @@
 
 #include <cstdlib>
 
-#include "privateStack.h"
-
 typedef int stack_t;
 
 struct stack;
 
-const size_t  START_STACK_SIZE = 20;
+const int START_STACK_SIZE = 20;
+
+enum stackError {
+    STACK_NO_ERROR                =  0,
+    STACK_NULL_POINTER            =  1,
+    STACK_DATA_NULL_POINTER       =  2,
+    STACK_OVERFLOW                =  3,
+    STACK_ANTI_OVERFLOW           =  4,
+    STACK_BAD_CAPACITY            =  5,
+    STACK_STRUCT_BAD_CANARY       =  6,
+    STACK_DATA_BAD_CANARY         =  7,
+    STACK_BAD_HASH                =  8,
+    INVALID_INPUT_VALUE           =  9,
+    STACK_BAD_SIZE                = 10,
+    POP_VARIABLE_NULL_POINTER     = 11,
+    DUMP_FILE_NAME_NULL_POINTER   = 12
+};
 
 // FUNCTION PROTOTYPES //
-int        stackInitialize         (stack *stack, size_t   size);
-int        stackDestruct           (stack *stack);
-int        stackPush               (stack *stack, stack_t  value);
-int        stackPop                (stack *stack, stack_t *variable);
-int        destructPrivateStack    (stack *stack);
-int        setDumpFileName         (stack *stack);
-stack     *initializePrivateStack  (const char *fileName, const int line, const char *function);
+stackError stackInitialize         (stack *stack, int      capacity);
+stackError stackDestruct           (stack *stack);
+stackError stackPush               (stack *stack, stack_t  value);
+stackError stackPop                (stack *stack, stack_t *variable);
+stackError destructPrivateStack    (stack *stack);
+stackError setDumpFileName         (stack *stack);
+stack     *createPrivateStack      ();
+stackError initializePrivateStack  (stack *stack, const char *fileName, const int line, const char *function);
 // FUNCTION PROTOTYPES //
 
 #endif
