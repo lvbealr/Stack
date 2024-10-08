@@ -81,12 +81,12 @@ They contain complete information about the initialization of the stack, the mem
 ### DEFAULT MODE
 Use stackPush() and stackPop() functions to interact with the stack!
 ```c
-stackPush(Stack,     5);
+stackPush(Stack,    5);
 stackPush(Stack,   10);
 StackPush(Stack,   15);
 StackPush(Stack,   20);
-StackPush(Stack, 999);
-stackPop  (Stack,   &x);
+StackPush(Stack,  999);
+stackPop (Stack,   &x);
 
 // [5, 10, 15, 20, 999] -> [5, 10, 15, 20]
 ```
