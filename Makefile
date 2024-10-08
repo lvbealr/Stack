@@ -4,7 +4,7 @@ SRC          = main.cpp privateStack.cpp stack.cpp stackDump.cpp stackHash.cpp
 
 BUILD_DIR    = ./build/
 
-TARGET       = Stack.exe
+TARGET       = Stack
 OBJECT       = $(patsubst %.cpp, %.o, $(SRC))
 BUILD_OBJ    = $(addprefix $(BUILD_DIR), $(OBJECT))
 
