@@ -42,7 +42,8 @@ int stackDumpHtml(stack *stack) {
                 stack->memoryChunk, *(stack_t *)(stack->memoryChunk));
     }
 
-    if (stack->capacity > 50) {
+    if (stack->data != NULL) {
+        if (stack->capacity > 50) {
 
         for (int index = 0; index < 50; index++) {
 
@@ -96,6 +97,8 @@ int stackDumpHtml(stack *stack) {
             }
         }
     }
+    }
+
 
     if (stack->memoryChunk != NULL) {
         fprintf(outputFile, "<b><font color = 'DeepPink'>\t" "RIGHT_DATA_CANARY [%p]</b></font> = %d\n",

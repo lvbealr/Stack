@@ -17,7 +17,7 @@ uint64_t djb2Hash(stack *STACK) {
 
     for (int index = 0; index < STACK->size; index++) {
         if (index == 0) {
-            code = (uint64_t)STACK->data[index];
+            code  = (uint64_t)STACK->data[index];
         }
         
         else {
@@ -36,7 +36,7 @@ stackError djb2HashCheck(stack *STACK) {
     uint64_t newHash = djb2Hash(STACK);
 
     if (newHash != STACK->hash) {
-        return STACK_NO_ERROR;
+        return STACK_BAD_HASH;
     }
 
     STACK->hash = newHash;

@@ -102,7 +102,7 @@ stackError stackFillPoison        (stack *STACK);
 stackError stackCheck             (stack *STACK);
 stackError printStack             (stack *STACK);
 void       printBinaryErrorStatus (int errorBinaryCode);
+void       printErrorDescription  (int errorBinaryCode);
 // FUNCTION PROTOTYPES //
 
 #endif // STACK_H_
-

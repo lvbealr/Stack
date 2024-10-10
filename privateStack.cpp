@@ -7,18 +7,24 @@
 #include "customExits.h"
 #include "stack.h"
 
+extern stack *STACK_PTR;
+
 stack *createPrivateStack() {
     stack *STACK = (stack *)calloc(1, sizeof(stack));
+
+    STACK_PTR    = STACK;
 
     if (STACK == NULL) {
         assert("STACK POINTER IS NULL" && 0);
     }
 
+    *STACK = {};
+    
     return STACK;
 }
 
 stackError initializePrivateStack(stack *STACK, const char *fileName, int line, const char *function) {
-    customAssert(STACK != NULL, STACK_NULL_POINTER);
+    customAssert(STACK == STACK_PTR, STACK_NULL_POINTER);
 
     #ifndef _NDEBUG
     STACK->leftCanary  = CANARY;
@@ -28,6 +34,8 @@ stackError initializePrivateStack(stack *STACK, const char *fileName, int line, 
     STACK->bornFileName      = fileName;
     STACK->bornLine          = line;
     STACK->bornFuncPrototype = function;
+
+    STACK->errorStatus       = 0;
 
     setDumpFileName(STACK);
     stackInitialize(STACK, START_STACK_SIZE);
@@ -44,7 +52,7 @@ stackError initializePrivateStack(stack *STACK, const char *fileName, int line, 
 }
 
 stackError destructPrivateStack(stack *STACK) {
-    customWarning(STACK != NULL, STACK_NULL_POINTER);
+    customWarning(STACK == STACK_PTR, STACK_NULL_POINTER);
 
     stackDestruct(STACK);
 
@@ -53,6 +61,8 @@ stackError destructPrivateStack(stack *STACK) {
 
     printf("[ERROR BINARY CODE]: ");
     printBinaryErrorStatus(STACK->errorStatus);
+    printf("\n");
+    printErrorDescription(STACK->errorStatus);
 
     STACK->errorStatus = 0;
 
@@ -62,7 +72,7 @@ stackError destructPrivateStack(stack *STACK) {
 }
 
 stackError setDumpFileName(stack *STACK) {
-    customWarning(STACK != NULL, STACK_NULL_POINTER);
+    customWarning(STACK == STACK_PTR, STACK_NULL_POINTER);
 
     char *buffer           = (char *)calloc(NAME_BUFFER_SIZE, sizeof(char));
     customWarning(buffer != NULL, DUMP_FILE_NAME_NULL_POINTER);

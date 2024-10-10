@@ -7,6 +7,9 @@
 #include "stack.h"
 #include "customExits.h"
 #include "stackHash.h"
+#include "colorPrint.h"
+
+extern stack *STACK_PTR;
 
 #define SPECIFICATOR_TYPE "d"
 
@@ -171,7 +174,7 @@ static stackError stackResize(stack *STACK, const changeMemory changeMemoryMode)
         errorCode = stackCheck(STACK);
         customAssert(errorCode == STACK_NO_ERROR, errorCode);
 
-        stackFillPoison(STACK); // TODO customRealloc (realloc + fill)
+        stackFillPoison(STACK);
     }
 
     else if (changeMemoryMode == DUMP_MEMORY) {
@@ -191,7 +194,7 @@ static stackError stackResize(stack *STACK, const changeMemory changeMemoryMode)
         errorCode = stackCheck(STACK);
         customAssert(errorCode == STACK_NO_ERROR, errorCode);
 
-        stackFillPoison(STACK); // TODO customRealloc (realloc + fill)
+        stackFillPoison(STACK);
     }
 
     DUMP_(STACK);
@@ -204,35 +207,47 @@ static stackError stackResize(stack *STACK, const changeMemory changeMemoryMode)
 
 stackError stackCheck(stack *STACK) {
     if (STACK == NULL) {
-        STACK->errorStatus |= 1 << STACK_NULL_POINTER;
+        STACK->errorStatus |= STACK_NULL_POINTER;
         return STACK_NULL_POINTER;
     }
 
-    if (STACK->memoryChunk == NULL) {
-        STACK->errorStatus |= 1 << STACK_DATA_NULL_POINTER;
+    if (STACK != STACK_PTR) {
+        STACK_PTR->errorStatus |= STACK_INVALID_POINTER;
+        return STACK_INVALID_POINTER;
+    }
+
+    if (STACK_PTR->memoryChunk == NULL || STACK_PTR->data == NULL) {
+        STACK_PTR->errorStatus |= STACK_DATA_NULL_POINTER;
         return STACK_DATA_NULL_POINTER;
     }
 
-    if (STACK->size > STACK->capacity) {
-        STACK->errorStatus |= 1 << STACK_OVERFLOW;
+    if (STACK_PTR->size > STACK_PTR->capacity) {
+        STACK_PTR->errorStatus |= STACK_OVERFLOW;
         return STACK_OVERFLOW;
     }
 
-    if (STACK->size < 0) {
-        STACK->errorStatus |= 1 << STACK_ANTI_OVERFLOW;
+    if (STACK_PTR->size < 0) {
+        STACK_PTR->errorStatus |= STACK_ANTI_OVERFLOW;
         return STACK_ANTI_OVERFLOW;
     }
 
-    if (STACK->capacity < 0) {
-        STACK->errorStatus |= 1 << STACK_BAD_CAPACITY;
+    if (STACK_PTR->capacity < 0) {
+        STACK_PTR->errorStatus |= STACK_BAD_CAPACITY;
         return STACK_BAD_CAPACITY;
     }
 
     #ifndef _NDEBUG
 
-    if (STACK->leftCanary != CANARY || STACK->rightCanary != CANARY) {
-        STACK->errorStatus |= 1 << STACK_STRUCT_BAD_CANARY;
+    if (STACK_PTR->leftCanary != CANARY || STACK_PTR->rightCanary != CANARY) {
+        STACK_PTR->errorStatus |= STACK_STRUCT_BAD_CANARY;
         return STACK_STRUCT_BAD_CANARY;
+    }
+
+    int canaryStatus = 0;
+    CHECK_CANARY();
+    if (canaryStatus != 0) {
+        STACK_PTR->errorStatus |= STACK_DATA_BAD_CANARY;
+        return STACK_DATA_BAD_CANARY;
     }
 
     #endif
@@ -255,6 +270,43 @@ void printBinaryErrorStatus(int errorBinaryCode) {
     if (errorBinaryCode > 1) {
             printBinaryErrorStatus(errorBinaryCode >> 1);
         }
-
+    
     printf("%d", errorBinaryCode % 2);
 }
+
+#define DESCR_(err) {                                                                   \
+    case err:                                                                           \
+        customPrint(red, bold, bgDefault, "[FAIL: %d] " #err, errorBinaryCode & shift); \
+        shift <<= 1;                                                                    \
+        break;                                                                          \
+}
+
+void printErrorDescription(int errorBinaryCode) {
+    int shift = 1;
+
+    while (errorBinaryCode >= shift) {
+        switch (errorBinaryCode & shift) {
+            DESCR_(STACK_NULL_POINTER);
+            DESCR_(STACK_INVALID_POINTER);
+            DESCR_(STACK_DATA_NULL_POINTER);
+            DESCR_(STACK_OVERFLOW);
+            DESCR_(STACK_ANTI_OVERFLOW);
+            DESCR_(STACK_BAD_CAPACITY);
+            DESCR_(STACK_STRUCT_BAD_CANARY);
+            DESCR_(STACK_DATA_BAD_CANARY);
+            DESCR_(STACK_BAD_HASH);
+            DESCR_(INVALID_INPUT_VALUE);
+            DESCR_(STACK_BAD_SIZE);
+            DESCR_(POP_VARIABLE_NULL_POINTER);
+            DESCR_(DUMP_FILE_NAME_NULL_POINTER);
+            DESCR_(CMD_BUFFER_NULL_POINTER);
+            
+            case STACK_NO_ERROR:
+            default:
+                shift <<= 1;
+                break;
+        }
+    }
+}
+
+#undef DESCR_

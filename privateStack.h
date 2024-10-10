@@ -10,20 +10,21 @@ struct stack;
 const int START_STACK_SIZE = 20;
 
 enum stackError {
-    STACK_NO_ERROR                =  0,
-    STACK_NULL_POINTER            =  1,
-    STACK_DATA_NULL_POINTER       =  2,
-    STACK_OVERFLOW                =  3,
-    STACK_ANTI_OVERFLOW           =  4,
-    STACK_BAD_CAPACITY            =  5,
-    STACK_STRUCT_BAD_CANARY       =  6,
-    STACK_DATA_BAD_CANARY         =  7,
-    STACK_BAD_HASH                =  8,
-    INVALID_INPUT_VALUE           =  9,
-    STACK_BAD_SIZE                = 10,
-    POP_VARIABLE_NULL_POINTER     = 11,
-    DUMP_FILE_NAME_NULL_POINTER   = 12,
-    CMD_BUFFER_NULL_POINTER       = 13
+    STACK_NO_ERROR                =       0,
+    STACK_NULL_POINTER            = 1 <<  0,
+    STACK_INVALID_POINTER         = 1 <<  1,
+    STACK_DATA_NULL_POINTER       = 1 <<  2,
+    STACK_OVERFLOW                = 1 <<  3,
+    STACK_ANTI_OVERFLOW           = 1 <<  4,
+    STACK_BAD_CAPACITY            = 1 <<  5,
+    STACK_STRUCT_BAD_CANARY       = 1 <<  6,
+    STACK_DATA_BAD_CANARY         = 1 <<  7,
+    STACK_BAD_HASH                = 1 <<  8,
+    INVALID_INPUT_VALUE           = 1 <<  9,
+    STACK_BAD_SIZE                = 1 << 10,
+    POP_VARIABLE_NULL_POINTER     = 1 << 11,
+    DUMP_FILE_NAME_NULL_POINTER   = 1 << 12,
+    CMD_BUFFER_NULL_POINTER       = 1 << 13
 };
 
 // FUNCTION PROTOTYPES //

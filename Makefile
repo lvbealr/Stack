@@ -1,6 +1,6 @@
 CXX          = g++
 
-SRC          = main.cpp privateStack.cpp stack.cpp stackDump.cpp stackHash.cpp
+SRC          = main.cpp hidePtr.cpp privateStack.cpp stack.cpp stackDump.cpp stackHash.cpp colorPrint.cpp
 
 BUILD_DIR    = ./build/
 
@@ -31,7 +31,6 @@ all : $(TARGET)
 
 $(TARGET) : $(BUILD_DIR) $(OBJECT)
 	$(CXX) $(BUILD_OBJ) -o $(TARGET)
-	xcowsay "myStack COMPILED!"
 
 $(BUILD_DIR) :
 	mkdir -p build
