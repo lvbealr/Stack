@@ -17,6 +17,7 @@
 - [TODO List](#todo)
 - [Authors](#authors)
 - [Acknowledgments](#acknowledgement)
+- [Notes](#notes)
 
 ## 🧐 About <a name = "about"></a>
 
@@ -107,3 +108,6 @@ stackPop (Stack,   &x);
 
 - [@livlavr](https://github.com/livlavr) - Good Boy
 - [@Iprime111](https://github.com/Iprime111) - Bad Boy 😈
+
+## 📝 Notes <a name = "notes"></a>
+This is an educational project and the errors in it are designed for hacking by a partner :))
