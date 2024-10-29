@@ -19,7 +19,7 @@ stack *createPrivateStack() {
     }
 
     *STACK = {};
-    
+
     return STACK;
 }
 
@@ -76,17 +76,19 @@ stackError setDumpFileName(stack *STACK) {
 
     char *buffer           = (char *)calloc(NAME_BUFFER_SIZE, sizeof(char));
     customWarning(buffer != NULL, DUMP_FILE_NAME_NULL_POINTER);
-    
+
     const time_t timer     = time(NULL);
     tm *now                = localtime(&timer);
-    const char *timeChar   = asctime(now);  
+    const char *timeChar   = asctime(now);
     size_t timeCharLength  = strlen(timeChar) - 1;
-    const char *folderName = "dumps/";
-    size_t systemCmdLength = strlen("mkdir ") + strlen(folderName) + 1;
+    const char *folderName = "dumps/ ";
+    char       *noOutput   = ">&nul";
+    size_t systemCmdLength = strlen("mkdir ") + strlen(folderName) + strlen(">&nul") + 1;
     char *systemCmdBuffer  = (char *)calloc(systemCmdLength, sizeof(char));
     customWarning(systemCmdBuffer != NULL, CMD_BUFFER_NULL_POINTER);
     strcpy(systemCmdBuffer, "mkdir ");
-    const char *systemCmd  = strcat(systemCmdBuffer, folderName);
+    char *systemCmd  = strcat(systemCmdBuffer, folderName);
+    systemCmd = strcat(systemCmd, noOutput);
 
     system(systemCmd);
 
